@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>HealthBridge - iOS App Preview</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a2e;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .phone-frame {
+            width: 375px;
+            height: 812px;
+            background: #000;
+            border-radius: 50px;
+            padding: 15px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            position: relative;
+        }
+
+        .phone-screen {
+            width: 100%;
+            height: 100%;
+            background: #f2f2f7;
+            border-radius: 38px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .notch {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150px;
+            height: 30px;
+            background: #000;
+            border-radius: 0 0 20px 20px;
+            z-index: 100;
+        }
+
+        .status-bar {
+            height: 44px;
+            background: transparent;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 25px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .screen {
+            display: none;
+            height: calc(100% - 44px);
+            overflow-y: auto;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        /* Welcome Screen */
+        .welcome-screen {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+            color: white;
+            text-align: center;
+        }
+
+        .welcome-screen.active {
+            display: flex;
+        }
+
+        .app-icon {
+            width: 100px;
+            height: 100px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 50px;
+            margin-bottom: 20px;
+        }
+
+        .welcome-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .welcome-subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+            margin-bottom: 40px;
+        }
+
+        .feature-list {
+            text-align: left;
+            width: 100%;
+            margin-bottom: 40px;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px 0;
+        }
+
+        .feature-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .feature-text h4 {
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .feature-text p {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 14px;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, opacity 0.2s;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+            opacity: 0.9;
+        }
+
+        .btn-primary {
+            background: white;
+            color: #667eea;
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+
+        /* Status Selection Screen */
+        .status-screen {
+            background: #f2f2f7;
+            padding: 20px;
+        }
+
+        .screen-header {
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .screen-icon {
+            font-size: 50px;
+            margin-bottom: 15px;
+        }
+
+        .screen-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1c1c1e;
+            margin-bottom: 8px;
+        }
+
+        .screen-subtitle {
+            font-size: 15px;
+            color: #8e8e93;
+            line-height: 1.4;
+        }
+
+        .privacy-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin: 15px 0;
+        }
+
+        .option-list {
+            margin-top: 20px;
+        }
+
+        .option-item {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .option-item:hover {
+            transform: translateX(5px);
+        }
+
+        .option-item.selected {
+            background: #667eea;
+            color: white;
+        }
+
+        .option-icon {
+            width: 40px;
+            height: 40px;
+            background: #f2f2f7;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .option-item.selected .option-icon {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .option-text {
+            flex: 1;
+        }
+
+        .option-text h4 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .option-text p {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+
+        .checkmark {
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+
+        .info-box h5 {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #1976d2;
+            margin-bottom: 8px;
+        }
+
+        .info-box p {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.4;
+        }
+
+        .bottom-btn {
+            position: sticky;
+            bottom: 0;
+            background: #f2f2f7;
+            padding: 20px;
+            margin: 0 -20px;
+        }
+
+        .bottom-btn .btn {
+            background: #667eea;
+            color: white;
+        }
+
+        .bottom-btn .btn:disabled {
+            background: #c7c7cc;
+        }
+
+        /* Dashboard Screen */
+        .dashboard-screen {
+            background: #f2f2f7;
+        }
+
+        .dashboard-header {
+            background: white;
+            padding: 20px;
+            padding-top: 10px;
+        }
+
+        .greeting {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .greeting-text span {
+            font-size: 14px;
+            color: #8e8e93;
+        }
+
+        .greeting-text h2 {
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .avatar {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .dashboard-content {
+            padding: 20px;
+        }
+
+        .emergency-card {
+            background: white;
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .emergency-card h3 {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 16px;
+            margin-bottom: 12px;
+        }
+
+        .emergency-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .emergency-btn {
+            flex: 1;
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            color: white;
+            cursor: pointer;
+        }
+
+        .emergency-btn.red {
+            background: #ff3b30;
+        }
+
+        .emergency-btn.purple {
+            background: #af52de;
+        }
+
+        .emergency-btn .number {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .emergency-btn .label {
+            font-size: 11px;
+            opacity: 0.9;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 20px 0 12px;
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .action-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .action-card:hover {
+            transform: scale(1.02);
+        }
+
+        .action-card .icon {
+            font-size: 30px;
+            margin-bottom: 10px;
+        }
+
+        .action-card h4 {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .recommendation-card {
+            background: white;
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .rec-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+
+        .rec-icon.green { background: #e8f5e9; }
+        .rec-icon.purple { background: #f3e5f5; }
+        .rec-icon.orange { background: #fff3e0; }
+
+        .rec-text {
+            flex: 1;
+        }
+
+        .rec-text h4 {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .rec-text p {
+            font-size: 12px;
+            color: #8e8e93;
+        }
+
+        /* Tab Bar */
+        .tab-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 83px;
+            background: white;
+            border-top: 1px solid #e5e5e5;
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-start;
+            padding-top: 8px;
+            border-radius: 0 0 38px 38px;
+        }
+
+        .tab-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            padding: 5px 15px;
+        }
+
+        .tab-item .icon {
+            font-size: 24px;
+            color: #8e8e93;
+        }
+
+        .tab-item span {
+            font-size: 10px;
+            color: #8e8e93;
+        }
+
+        .tab-item.active .icon,
+        .tab-item.active span {
+            color: #667eea;
+        }
+
+        /* Clinic Finder Screen */
+        .clinic-screen {
+            background: #f2f2f7;
+        }
+
+        .search-bar {
+            background: white;
+            padding: 15px;
+        }
+
+        .search-input {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #f2f2f7;
+            padding: 12px 15px;
+            border-radius: 12px;
+        }
+
+        .search-input input {
+            border: none;
+            background: none;
+            outline: none;
+            flex: 1;
+            font-size: 16px;
+        }
+
+        .filter-chips {
+            display: flex;
+            gap: 8px;
+            padding: 10px 15px;
+            overflow-x: auto;
+            background: white;
+        }
+
+        .chip {
+            padding: 8px 16px;
+            background: #f2f2f7;
+            border-radius: 20px;
+            font-size: 14px;
+            white-space: nowrap;
+            cursor: pointer;
+        }
+
+        .chip.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .clinic-list {
+            padding: 15px;
+            padding-bottom: 100px;
+        }
+
+        .clinic-card {
+            background: white;
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        .clinic-header {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .clinic-icon {
+            width: 45px;
+            height: 45px;
+            background: #e3f2fd;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+
+        .clinic-info h4 {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .clinic-info p {
+            font-size: 12px;
+            color: #8e8e93;
+        }
+
+        .open-badge {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-left: auto;
+        }
+
+        .clinic-address {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #8e8e93;
+            font-size: 13px;
+            margin-bottom: 12px;
+        }
+
+        .service-badges {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+
+        .service-badge {
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .service-badge.green {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .service-badge.blue {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .service-badge.purple {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+
+        .clinic-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .rating {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 14px;
+        }
+
+        .call-btn {
+            background: #667eea;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Navigation */
+        .nav-buttons {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 1000;
+        }
+
+        .nav-btn {
+            background: #333;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .nav-btn:hover {
+            background: #555;
+        }
+
+        .screen-label {
+            position: absolute;
+            top: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 12px;
+            z-index: 50;
+        }
+
+        /* Progress Bar */
+        .progress-bar {
+            height: 4px;
+            background: #e5e5e5;
+            margin: 15px 20px;
+            border-radius: 2px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #667eea;
+            border-radius: 2px;
+            transition: width 0.3s;
+        }
+
+        /* Scrollbar */
+        .screen::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-frame">
+        <div class="phone-screen">
+            <div class="notch"></div>
+            <div class="status-bar">
+                <span>9:41</span>
+                <span>📶 📡 🔋</span>
+            </div>
+
+            <div class="screen-label" id="screenLabel">Welcome Screen</div>
+
+            <!-- Welcome Screen -->
+            <div class="screen welcome-screen active" id="welcome">
+                <div class="app-icon">🏥</div>
+                <div class="welcome-title">HealthBridge</div>
+                <div class="welcome-subtitle">Your guide to healthcare in a new country</div>
+
+                <div class="feature-list">
+                    <div class="feature-item">
+                        <div class="feature-icon">📍</div>
+                        <div class="feature-text">
+                            <h4>Find Care Near You</h4>
+                            <p>Locate clinics that welcome everyone</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">📅</div>
+                        <div class="feature-text">
+                            <h4>Easy Appointments</h4>
+                            <p>Schedule visits with one tap</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">📚</div>
+                        <div class="feature-text">
+                            <h4>Learn the System</h4>
+                            <p>Understand your healthcare rights</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">🌍</div>
+                        <div class="feature-text">
+                            <h4>Your Language</h4>
+                            <p>Available in multiple languages</p>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" onclick="showScreen('status')">Let's Get Started →</button>
+            </div>
+
+            <!-- Status Selection Screen -->
+            <div class="screen status-screen" id="status">
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 25%"></div>
+                </div>
+
+                <div class="screen-header">
+                    <div class="screen-icon">👤</div>
+                    <div class="screen-title">Tell us about your situation</div>
+                    <div class="screen-subtitle">This helps us find the right resources for you. Your information is private and secure.</div>
+                    <div class="privacy-badge">🔒 Your information stays on your device only</div>
+                </div>
+
+                <div class="option-list">
+                    <div class="option-item" onclick="selectOption(this, 'refugee')">
+                        <div class="option-icon">🚶</div>
+                        <div class="option-text">
+                            <h4>Refugee</h4>
+                            <p>I came to this country as a refugee</p>
+                        </div>
+                    </div>
+                    <div class="option-item" onclick="selectOption(this, 'asylum')">
+                        <div class="option-icon">🛡️</div>
+                        <div class="option-text">
+                            <h4>Asylum Seeker</h4>
+                            <p>I am seeking asylum protection</p>
+                        </div>
+                    </div>
+                    <div class="option-item" onclick="selectOption(this, 'undocumented')">
+                        <div class="option-icon">❓</div>
+                        <div class="option-text">
+                            <h4>Undocumented</h4>
+                            <p>I don't have legal documentation</p>
+                        </div>
+                    </div>
+                    <div class="option-item" onclick="selectOption(this, 'visa')">
+                        <div class="option-icon">📄</div>
+                        <div class="option-text">
+                            <h4>Visa Holder</h4>
+                            <p>I have a temporary visa</p>
+                        </div>
+                    </div>
+                    <div class="option-item" onclick="selectOption(this, 'other')">
+                        <div class="option-icon">⚪</div>
+                        <div class="option-text">
+                            <h4>Other / Prefer not to say</h4>
+                            <p>Other situation</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-box" id="statusInfo" style="display: none;">
+                    <h5>ℹ️ Good to know</h5>
+                    <p id="statusInfoText"></p>
+                </div>
+
+                <div class="bottom-btn">
+                    <button class="btn" onclick="showScreen('housing')">Continue →</button>
+                </div>
+            </div>
+
+            <!-- Housing Screen -->
+            <div class="screen status-screen" id="housing">
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 37%"></div>
+                </div>
+
+                <div class="screen-header">
+                    <div class="screen-icon">🏠</div>
+                    <div class="screen-title">What is your housing situation?</div>
+                    <div class="screen-subtitle">This helps us connect you with the right services and support.</div>
+                </div>
+
+                <div class="option-list">
+                    <div class="option-item" onclick="selectHousing(this, 'stable')">
+                        <div class="option-icon">🏡</div>
+                        <div class="option-text">
+                            <h4>Stable Housing</h4>
+                        </div>
+                    </div>
+                    <div class="option-item" onclick="selectHousing(this, 'temporary')">
+                        <div class="option-icon">🏘️</div>
+                        <div class="option-text">
+                            <h4>Temporary Housing</h4>
+                        </div>
+                    </div>
+                    <div class="option-item" onclick="selectHousing(this, 'shelter')">
+                        <div class="option-icon">🏢</div>
+                        <div class="option-text">
+                            <h4>Shelter</h4>
+                        </div>
+                    </div>
+                    <div class="option-item" onclick="selectHousing(this, 'homeless')">
+                        <div class="option-icon">🚶</div>
+                        <div class="option-text">
+                            <h4>Currently Homeless</h4>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-box" id="housingInfo" style="display: none;">
+                    <h5>🤝 We're here to help</h5>
+                    <p>Many clinics specialize in serving people experiencing housing instability. We'll help you find Healthcare for the Homeless programs.</p>
+                </div>
+
+                <div class="bottom-btn">
+                    <button class="btn" onclick="showScreen('dashboard')">Continue →</button>
+                </div>
+            </div>
+
+            <!-- Dashboard Screen -->
+            <div class="screen dashboard-screen" id="dashboard">
+                <div class="dashboard-header">
+                    <div class="greeting">
+                        <div class="greeting-text">
+                            <span>Good morning</span>
+                            <h2>Welcome!</h2>
+                        </div>
+                        <div class="avatar">U</div>
+                    </div>
+                </div>
+
+                <div class="dashboard-content">
+                    <div class="emergency-card">
+                        <h3>🚨 Emergency</h3>
+                        <div class="emergency-buttons">
+                            <div class="emergency-btn red">
+                                <div class="number">911</div>
+                                <div class="label">Life-threatening</div>
+                            </div>
+                            <div class="emergency-btn purple">
+                                <div class="number">988</div>
+                                <div class="label">Mental health crisis</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section-title">Quick Actions</div>
+                    <div class="quick-actions">
+                        <div class="action-card" onclick="showScreen('clinics')">
+                            <div class="icon">📍</div>
+                            <h4>Find a Clinic</h4>
+                        </div>
+                        <div class="action-card">
+                            <div class="icon">📅</div>
+                            <h4>Book Appointment</h4>
+                        </div>
+                        <div class="action-card">
+                            <div class="icon">📚</div>
+                            <h4>Learn Healthcare</h4>
+                        </div>
+                        <div class="action-card">
+                            <div class="icon">🛡️</div>
+                            <h4>My Rights</h4>
+                        </div>
+                    </div>
+
+                    <div class="section-title">Recommended for You</div>
+                    <div class="recommendation-card">
+                        <div class="rec-icon green">💵</div>
+                        <div class="rec-text">
+                            <h4>Free & Low-Cost Care</h4>
+                            <p>Find clinics that offer care regardless of ability to pay</p>
+                        </div>
+                        <span>›</span>
+                    </div>
+                    <div class="recommendation-card">
+                        <div class="rec-icon purple">🚶</div>
+                        <div class="rec-text">
+                            <h4>Refugee Health Services</h4>
+                            <p>Specialized clinics for refugees and asylum seekers</p>
+                        </div>
+                        <span>›</span>
+                    </div>
+                    <div class="recommendation-card">
+                        <div class="rec-icon orange">🤝</div>
+                        <div class="rec-text">
+                            <h4>Healthcare for the Homeless</h4>
+                            <p>Programs for people experiencing homelessness</p>
+                        </div>
+                        <span>›</span>
+                    </div>
+                </div>
+
+                <div class="tab-bar">
+                    <div class="tab-item active">
+                        <div class="icon">🏠</div>
+                        <span>Home</span>
+                    </div>
+                    <div class="tab-item" onclick="showScreen('clinics')">
+                        <div class="icon">📍</div>
+                        <span>Find Care</span>
+                    </div>
+                    <div class="tab-item">
+                        <div class="icon">📅</div>
+                        <span>Appointments</span>
+                    </div>
+                    <div class="tab-item">
+                        <div class="icon">📚</div>
+                        <span>Learn</span>
+                    </div>
+                    <div class="tab-item">
+                        <div class="icon">👤</div>
+                        <span>Profile</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Clinic Finder Screen -->
+            <div class="screen clinic-screen" id="clinics">
+                <div class="search-bar">
+                    <div class="search-input">
+                        <span>🔍</span>
+                        <input type="text" placeholder="Search clinics...">
+                    </div>
+                </div>
+
+                <div class="filter-chips">
+                    <div class="chip active">All</div>
+                    <div class="chip">🚶 Refugee Health</div>
+                    <div class="chip">💚 Free Clinic</div>
+                    <div class="chip">🏥 Community Health</div>
+                    <div class="chip">🧠 Mental Health</div>
+                </div>
+
+                <div class="clinic-list">
+                    <div class="clinic-card">
+                        <div class="clinic-header">
+                            <div class="clinic-icon">🏥</div>
+                            <div class="clinic-info">
+                                <h4>Community Care Health Center</h4>
+                                <p>Community Health Center</p>
+                            </div>
+                            <div class="open-badge">Open</div>
+                        </div>
+                        <div class="clinic-address">
+                            📍 123 Main Street, Chicago, IL 60601
+                        </div>
+                        <div class="service-badges">
+                            <span class="service-badge green">Sliding Scale</span>
+                            <span class="service-badge purple">Interpreter</span>
+                            <span class="service-badge blue">Walk-ins OK</span>
+                        </div>
+                        <div class="clinic-actions">
+                            <div class="rating">⭐ 4.5 (234)</div>
+                            <div class="call-btn">📞 Call</div>
+                        </div>
+                    </div>
+
+                    <div class="clinic-card">
+                        <div class="clinic-header">
+                            <div class="clinic-icon" style="background: #e8f5e9;">💚</div>
+                            <div class="clinic-info">
+                                <h4>Free Health Clinic of Hope</h4>
+                                <p>Free Clinic</p>
+                            </div>
+                        </div>
+                        <div class="clinic-address">
+                            📍 456 Oak Avenue, Chicago, IL 60602
+                        </div>
+                        <div class="service-badges">
+                            <span class="service-badge green">Free Services</span>
+                            <span class="service-badge purple">Interpreter</span>
+                        </div>
+                        <div class="clinic-actions">
+                            <div class="rating">⭐ 4.8 (89)</div>
+                            <div class="call-btn">📞 Call</div>
+                        </div>
+                    </div>
+
+                    <div class="clinic-card">
+                        <div class="clinic-header">
+                            <div class="clinic-icon" style="background: #f3e5f5;">🚶</div>
+                            <div class="clinic-info">
+                                <h4>Refugee Wellness Center</h4>
+                                <p>Refugee Health Services</p>
+                            </div>
+                            <div class="open-badge">Open</div>
+                        </div>
+                        <div class="clinic-address">
+                            📍 789 Unity Blvd, Chicago, IL 60603
+                        </div>
+                        <div class="service-badges">
+                            <span class="service-badge green">Sliding Scale</span>
+                            <span class="service-badge purple">20+ Languages</span>
+                            <span class="service-badge blue">Telehealth</span>
+                        </div>
+                        <div class="clinic-actions">
+                            <div class="rating">⭐ 4.9 (156)</div>
+                            <div class="call-btn">📞 Call</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-bar">
+                    <div class="tab-item" onclick="showScreen('dashboard')">
+                        <div class="icon">🏠</div>
+                        <span>Home</span>
+                    </div>
+                    <div class="tab-item active">
+                        <div class="icon">📍</div>
+                        <span>Find Care</span>
+                    </div>
+                    <div class="tab-item">
+                        <div class="icon">📅</div>
+                        <span>Appointments</span>
+                    </div>
+                    <div class="tab-item">
+                        <div class="icon">📚</div>
+                        <span>Learn</span>
+                    </div>
+                    <div class="tab-item">
+                        <div class="icon">👤</div>
+                        <span>Profile</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="nav-buttons">
+        <div class="nav-btn" onclick="showScreen('welcome')">Welcome</div>
+        <div class="nav-btn" onclick="showScreen('status')">Status</div>
+        <div class="nav-btn" onclick="showScreen('housing')">Housing</div>
+        <div class="nav-btn" onclick="showScreen('dashboard')">Dashboard</div>
+        <div class="nav-btn" onclick="showScreen('clinics')">Clinics</div>
+    </div>
+
+    <script>
+        const screenNames = {
+            'welcome': 'Welcome Screen',
+            'status': 'Status Selection',
+            'housing': 'Housing Status',
+            'dashboard': 'Dashboard',
+            'clinics': 'Clinic Finder'
+        };
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+            document.getElementById('screenLabel').textContent = screenNames[screenId];
+        }
+
+        function selectOption(element, status) {
+            document.querySelectorAll('#status .option-item').forEach(o => {
+                o.classList.remove('selected');
+                const checkmark = o.querySelector('.checkmark');
+                if (checkmark) checkmark.remove();
+            });
+
+            element.classList.add('selected');
+            element.innerHTML += '<div class="checkmark">✓</div>';
+
+            const infoBox = document.getElementById('statusInfo');
+            const infoText = document.getElementById('statusInfoText');
+
+            const messages = {
+                'refugee': 'As a refugee, you may qualify for Medicaid and special refugee health programs. We\'ll help you find refugee health clinics near you.',
+                'asylum': 'Asylum seekers can access emergency medical care and may qualify for certain health programs. Many community health centers serve everyone.',
+                'undocumented': 'You have the right to emergency care regardless of status. Community health centers and free clinics serve everyone. We\'ll help you find them.',
+                'visa': 'Depending on your visa type, you may have different healthcare options. Community health centers offer affordable care for everyone.',
+                'other': 'No matter your situation, there are healthcare options available. Community health centers serve everyone regardless of status.'
+            };
+
+            infoText.textContent = messages[status];
+            infoBox.style.display = 'block';
+        }
+
+        function selectHousing(element, status) {
+            document.querySelectorAll('#housing .option-item').forEach(o => {
+                o.classList.remove('selected');
+                const checkmark = o.querySelector('.checkmark');
+                if (checkmark) checkmark.remove();
+            });
+
+            element.classList.add('selected');
+            element.innerHTML += '<div class="checkmark">✓</div>';
+
+            const infoBox = document.getElementById('housingInfo');
+            if (status === 'homeless' || status === 'shelter') {
+                infoBox.style.display = 'block';
+            } else {
+                infoBox.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
