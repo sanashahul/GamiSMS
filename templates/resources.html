@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t('resources.title') }} - {{ t('app.name') }}{% endblock %}
+
+{% block content %}
+<section class="resources-page">
+    <div class="container">
+        <div class="page-header">
+            <h1>{{ t('resources.title') }}</h1>
+            <p>{{ t('resources.subtitle') }}</p>
+        </div>
+
+        <!-- Resource Categories -->
+        <div class="resources-grid">
+            <!-- Translation Services -->
+            <div class="resource-card" id="translation">
+                <div class="resource-header">
+                    <span class="resource-icon">🗣️</span>
+                    <h2>{{ t('resources.translation_title') }}</h2>
+                </div>
+                <div class="resource-content">
+                    <p>{{ t('resources.translation_intro') }}</p>
+                    <ul class="resource-list">
+                        <li>
+                            <strong>{{ t('resources.hospital_interpreters') }}</strong>
+                            <p>{{ t('resources.hospital_interpreters_desc') }}</p>
+                        </li>
+                        <li>
+                            <strong>{{ t('resources.phone_interpreters') }}</strong>
+                            <p>{{ t('resources.phone_interpreters_desc') }}</p>
+                        </li>
+                        <li>
+                            <strong>{{ t('resources.document_translation') }}</strong>
+                            <p>{{ t('resources.document_translation_desc') }}</p>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Transportation -->
+            <div class="resource-card" id="transportation">
+                <div class="resource-header">
+                    <span class="resource-icon">🚗</span>
+                    <h2>{{ t('resources.transportation_title') }}</h2>
+                </div>
+                <div class="resource-content">
+                    <p>{{ t('resources.transportation_intro') }}</p>
+                    <ul class="resource-list">
+                        <li>
+                            <strong>{{ t('resources.medicaid_transport') }}</strong>
+                            <p>{{ t('resources.medicaid_transport_desc') }}</p>
+                        </li>
+                        <li>
+                            <strong>{{ t('resources.public_transit') }}</strong>
+                            <p>{{ t('resources.public_transit_desc') }}</p>
+                        </li>
+                        <li>
+                            <strong>{{ t('resources.volunteer_drivers') }}</strong>
+                            <p>{{ t('resources.volunteer_drivers_desc') }}</p>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Financial Assistance -->
+            <div class="resource-card" id="financial">
+                <div class="resource-header">
+                    <span class="resource-icon">💰</span>
+                    <h2>{{ t('resources.financial_title') }}</h2>
+                </div>
+                <div class="resource-content">
+                    <p>{{ t('resources.financial_intro') }}</p>
+                    <ul class="resource-list">
+                        <li>
+                            <strong>{{ t('resources.sliding_scale') }}</strong>
+                            <p>{{ t('resources.sliding_scale_desc') }}</p>
+                        </li>
+                        <li>
+                            <strong>{{ t('resources.charity_care') }}</strong>
+                            <p>{{ t('resources.charity_care_desc') }}</p>
+                        </li>
+                        <li>
+                            <strong>{{ t('resources.prescription_help') }}</strong>
+                            <p>{{ t('resources.prescription_help_desc') }}</p>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Mental Health -->
+            <div class="resource-card" id="mental-health">
+                <div class="resource-header">
+                    <span class="resource-icon">🧠</span>
+                    <h2>{{ t('resources.mental_title') }}</h2>
+                </div>
+                <div class="resource-content">
+                    <p>{{ t('resources.mental_intro') }}</p>
+                    <ul class="resource-list">
+                        <li>
+                            <strong>{{ t('resources.counseling') }}</strong>
+                            <p>{{ t('resources.counseling_desc') }}</p>
+                        </li>
+                        <li>
+                            <strong>{{ t('resources.support_groups') }}</strong>
+                            <p>{{ t('resources.support_groups_desc') }}</p>
+                        </li>
+                        <li>
+                            <strong>{{ t('resources.crisis_services') }}</strong>
+                            <p>{{ t('resources.crisis_services_desc') }}</p>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Community Health Centers -->
+            <div class="resource-card" id="community">
+                <div class="resource-header">
+                    <span class="resource-icon">🏥</span>
+                    <h2>{{ t('resources.community_title') }}</h2>
+                </div>
+                <div class="resource-content">
+                    <p>{{ t('resources.community_intro') }}</p>
+                    <ul class="resource-list">
+                        <li>
+                            <strong>{{ t('resources.fqhc') }}</strong>
+                            <p>{{ t('resources.fqhc_desc') }}</p>
+                        </li>
+                        <li>
+                            <strong>{{ t('resources.free_clinics') }}</strong>
+                            <p>{{ t('resources.free_clinics_desc') }}</p>
+                        </li>
+                        <li>
+                            <strong>{{ t('resources.mobile_clinics') }}</strong>
+                            <p>{{ t('resources.mobile_clinics_desc') }}</p>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Refugee Services -->
+            <div class="resource-card" id="refugee">
+                <div class="resource-header">
+                    <span class="resource-icon">🤝</span>
+                    <h2>{{ t('resources.refugee_title') }}</h2>
+                </div>
+                <div class="resource-content">
+                    <p>{{ t('resources.refugee_intro') }}</p>
+                    <ul class="resource-list">
+                        <li>
+                            <strong>{{ t('resources.resettlement') }}</strong>
+                            <p>{{ t('resources.resettlement_desc') }}</p>
+                        </li>
+                        <li>
+                            <strong>{{ t('resources.case_management') }}</strong>
+                            <p>{{ t('resources.case_management_desc') }}</p>
+                        </li>
+                        <li>
+                            <strong>{{ t('resources.cultural_orgs') }}</strong>
+                            <p>{{ t('resources.cultural_orgs_desc') }}</p>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Women & Children -->
+            <div class="resource-card" id="women-children">
+                <div class="resource-header">
+                    <span class="resource-icon">👨‍👩‍👧‍👦</span>
+                    <h2>{{ t('resources.women_children_title') }}</h2>
+                </div>
+                <div class="resource-content">
+                    <p>{{ t('resources.women_children_intro') }}</p>
+                    <ul class="resource-list">
+                        <li>
+                            <strong>{{ t('resources.wic') }}</strong>
+                            <p>{{ t('resources.wic_desc') }}</p>
+                        </li>
+                        <li>
+                            <strong>{{ t('resources.prenatal') }}</strong>
+                            <p>{{ t('resources.prenatal_desc') }}</p>
+                        </li>
+                        <li>
+                            <strong>{{ t('resources.chip') }}</strong>
+                            <p>{{ t('resources.chip_desc') }}</p>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Food & Nutrition -->
+            <div class="resource-card" id="food">
+                <div class="resource-header">
+                    <span class="resource-icon">🍎</span>
+                    <h2>{{ t('resources.food_title') }}</h2>
+                </div>
+                <div class="resource-content">
+                    <p>{{ t('resources.food_intro') }}</p>
+                    <ul class="resource-list">
+                        <li>
+                            <strong>{{ t('resources.food_banks') }}</strong>
+                            <p>{{ t('resources.food_banks_desc') }}</p>
+                        </li>
+                        <li>
+                            <strong>{{ t('resources.snap') }}</strong>
+                            <p>{{ t('resources.snap_desc') }}</p>
+                        </li>
+                        <li>
+                            <strong>{{ t('resources.meals_programs') }}</strong>
+                            <p>{{ t('resources.meals_programs_desc') }}</p>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Find Help Near You -->
+        <div class="find-help-section">
+            <h2>{{ t('resources.find_help') }}</h2>
+            <p>{{ t('resources.find_help_intro') }}</p>
+            <div class="search-tools">
+                <a href="https://findahealthcenter.hrsa.gov/" target="_blank" class="tool-link">
+                    <span class="tool-icon">🏥</span>
+                    <span>{{ t('resources.find_health_center') }}</span>
+                </a>
+                <a href="https://www.211.org/" target="_blank" class="tool-link">
+                    <span class="tool-icon">📞</span>
+                    <span>{{ t('resources.dial_211') }}</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

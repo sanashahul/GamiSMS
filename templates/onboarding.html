@@ -1,0 +1,365 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t('onboarding.title') }} - {{ t('app.name') }}{% endblock %}
+
+{% block content %}
+<section class="onboarding">
+    <div class="container">
+        <!-- Progress Bar -->
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: {{ (step / total_steps) * 100 }}%"></div>
+            </div>
+            <div class="progress-steps">
+                {% for i in range(1, total_steps + 1) %}
+                <div class="progress-step {{ 'active' if i <= step else '' }} {{ 'completed' if i < step else '' }}">
+                    <span class="step-dot">{{ '✓' if i < step else i }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            <p class="progress-text">{{ t('onboarding.step_of', step=step, total=total_steps) }}</p>
+        </div>
+
+        <!-- Step Content -->
+        <div class="onboarding-content">
+            {% if step == 1 %}
+            <!-- Step 1: Welcome -->
+            <div class="onboarding-step" data-step="1">
+                <div class="step-icon">👋</div>
+                <h1>{{ t('onboarding.welcome_title') }}</h1>
+                <p class="step-description">{{ t('onboarding.welcome_desc') }}</p>
+
+                <div class="info-cards">
+                    <div class="info-card">
+                        <span class="card-icon">🏥</span>
+                        <h3>{{ t('onboarding.learn_system') }}</h3>
+                        <p>{{ t('onboarding.learn_system_desc') }}</p>
+                    </div>
+                    <div class="info-card">
+                        <span class="card-icon">📋</span>
+                        <h3>{{ t('onboarding.your_rights') }}</h3>
+                        <p>{{ t('onboarding.your_rights_desc') }}</p>
+                    </div>
+                    <div class="info-card">
+                        <span class="card-icon">🆘</span>
+                        <h3>{{ t('onboarding.get_help') }}</h3>
+                        <p>{{ t('onboarding.get_help_desc') }}</p>
+                    </div>
+                </div>
+
+                <div class="step-actions">
+                    <a href="{{ url_for('onboarding_step', step=2) }}" class="btn btn-primary btn-lg">
+                        {{ t('onboarding.continue') }} →
+                    </a>
+                </div>
+            </div>
+
+            {% elif step == 2 %}
+            <!-- Step 2: Healthcare System Overview -->
+            <div class="onboarding-step" data-step="2">
+                <div class="step-icon">🏥</div>
+                <h1>{{ t('onboarding.system_title') }}</h1>
+                <p class="step-description">{{ t('onboarding.system_desc') }}</p>
+
+                <div class="healthcare-types">
+                    <div class="healthcare-type">
+                        <div class="type-header">
+                            <span class="type-icon">🏠</span>
+                            <h3>{{ t('onboarding.primary_care') }}</h3>
+                        </div>
+                        <p>{{ t('onboarding.primary_care_desc') }}</p>
+                        <ul class="type-list">
+                            <li>{{ t('onboarding.primary_example1') }}</li>
+                            <li>{{ t('onboarding.primary_example2') }}</li>
+                            <li>{{ t('onboarding.primary_example3') }}</li>
+                        </ul>
+                    </div>
+
+                    <div class="healthcare-type">
+                        <div class="type-header">
+                            <span class="type-icon">🏨</span>
+                            <h3>{{ t('onboarding.urgent_care') }}</h3>
+                        </div>
+                        <p>{{ t('onboarding.urgent_care_desc') }}</p>
+                        <ul class="type-list">
+                            <li>{{ t('onboarding.urgent_example1') }}</li>
+                            <li>{{ t('onboarding.urgent_example2') }}</li>
+                            <li>{{ t('onboarding.urgent_example3') }}</li>
+                        </ul>
+                    </div>
+
+                    <div class="healthcare-type emergency-type">
+                        <div class="type-header">
+                            <span class="type-icon">🚨</span>
+                            <h3>{{ t('onboarding.emergency_room') }}</h3>
+                        </div>
+                        <p>{{ t('onboarding.emergency_room_desc') }}</p>
+                        <div class="emergency-box">
+                            <p><strong>{{ t('onboarding.call_911') }}</strong></p>
+                            <ul class="type-list">
+                                <li>{{ t('onboarding.emergency_example1') }}</li>
+                                <li>{{ t('onboarding.emergency_example2') }}</li>
+                                <li>{{ t('onboarding.emergency_example3') }}</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step-actions">
+                    <a href="{{ url_for('onboarding_step', step=1) }}" class="btn btn-secondary">
+                        ← {{ t('onboarding.back') }}
+                    </a>
+                    <a href="{{ url_for('onboarding_step', step=3) }}" class="btn btn-primary">
+                        {{ t('onboarding.continue') }} →
+                    </a>
+                </div>
+            </div>
+
+            {% elif step == 3 %}
+            <!-- Step 3: Insurance & Coverage -->
+            <div class="onboarding-step" data-step="3">
+                <div class="step-icon">📋</div>
+                <h1>{{ t('onboarding.insurance_title') }}</h1>
+                <p class="step-description">{{ t('onboarding.insurance_desc') }}</p>
+
+                <div class="insurance-options">
+                    <div class="insurance-card">
+                        <h3>{{ t('onboarding.medicaid') }}</h3>
+                        <p>{{ t('onboarding.medicaid_desc') }}</p>
+                        <div class="eligibility">
+                            <strong>{{ t('onboarding.who_qualifies') }}</strong>
+                            <ul>
+                                <li>{{ t('onboarding.medicaid_qual1') }}</li>
+                                <li>{{ t('onboarding.medicaid_qual2') }}</li>
+                                <li>{{ t('onboarding.medicaid_qual3') }}</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="insurance-card">
+                        <h3>{{ t('onboarding.marketplace') }}</h3>
+                        <p>{{ t('onboarding.marketplace_desc') }}</p>
+                        <div class="eligibility">
+                            <strong>{{ t('onboarding.benefits') }}</strong>
+                            <ul>
+                                <li>{{ t('onboarding.marketplace_ben1') }}</li>
+                                <li>{{ t('onboarding.marketplace_ben2') }}</li>
+                                <li>{{ t('onboarding.marketplace_ben3') }}</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="insurance-card highlight">
+                        <h3>{{ t('onboarding.community_health') }}</h3>
+                        <p>{{ t('onboarding.community_health_desc') }}</p>
+                        <div class="eligibility">
+                            <strong>{{ t('onboarding.services_include') }}</strong>
+                            <ul>
+                                <li>{{ t('onboarding.community_serv1') }}</li>
+                                <li>{{ t('onboarding.community_serv2') }}</li>
+                                <li>{{ t('onboarding.community_serv3') }}</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step-actions">
+                    <a href="{{ url_for('onboarding_step', step=2) }}" class="btn btn-secondary">
+                        ← {{ t('onboarding.back') }}
+                    </a>
+                    <a href="{{ url_for('onboarding_step', step=4) }}" class="btn btn-primary">
+                        {{ t('onboarding.continue') }} →
+                    </a>
+                </div>
+            </div>
+
+            {% elif step == 4 %}
+            <!-- Step 4: Your Rights -->
+            <div class="onboarding-step" data-step="4">
+                <div class="step-icon">⚖️</div>
+                <h1>{{ t('onboarding.rights_title') }}</h1>
+                <p class="step-description">{{ t('onboarding.rights_desc') }}</p>
+
+                <div class="rights-list">
+                    <div class="right-item">
+                        <div class="right-icon">🗣️</div>
+                        <div class="right-content">
+                            <h3>{{ t('onboarding.right_interpreter') }}</h3>
+                            <p>{{ t('onboarding.right_interpreter_desc') }}</p>
+                        </div>
+                    </div>
+
+                    <div class="right-item">
+                        <div class="right-icon">🚫</div>
+                        <div class="right-content">
+                            <h3>{{ t('onboarding.right_nodiscrim') }}</h3>
+                            <p>{{ t('onboarding.right_nodiscrim_desc') }}</p>
+                        </div>
+                    </div>
+
+                    <div class="right-item">
+                        <div class="right-icon">🔒</div>
+                        <div class="right-content">
+                            <h3>{{ t('onboarding.right_privacy') }}</h3>
+                            <p>{{ t('onboarding.right_privacy_desc') }}</p>
+                        </div>
+                    </div>
+
+                    <div class="right-item">
+                        <div class="right-icon">🚨</div>
+                        <div class="right-content">
+                            <h3>{{ t('onboarding.right_emergency') }}</h3>
+                            <p>{{ t('onboarding.right_emergency_desc') }}</p>
+                        </div>
+                    </div>
+
+                    <div class="right-item">
+                        <div class="right-icon">📄</div>
+                        <div class="right-content">
+                            <h3>{{ t('onboarding.right_records') }}</h3>
+                            <p>{{ t('onboarding.right_records_desc') }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step-actions">
+                    <a href="{{ url_for('onboarding_step', step=3) }}" class="btn btn-secondary">
+                        ← {{ t('onboarding.back') }}
+                    </a>
+                    <a href="{{ url_for('onboarding_step', step=5) }}" class="btn btn-primary">
+                        {{ t('onboarding.continue') }} →
+                    </a>
+                </div>
+            </div>
+
+            {% elif step == 5 %}
+            <!-- Step 5: Your Information -->
+            <div class="onboarding-step" data-step="5">
+                <div class="step-icon">📝</div>
+                <h1>{{ t('onboarding.profile_title') }}</h1>
+                <p class="step-description">{{ t('onboarding.profile_desc') }}</p>
+
+                <form id="profile-form" class="profile-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="name">{{ t('onboarding.form_name') }}</label>
+                            <input type="text" id="name" name="name" placeholder="{{ t('onboarding.form_name_placeholder') }}">
+                        </div>
+                        <div class="form-group">
+                            <label for="phone">{{ t('onboarding.form_phone') }}</label>
+                            <input type="tel" id="phone" name="phone" placeholder="{{ t('onboarding.form_phone_placeholder') }}">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="dob">{{ t('onboarding.form_dob') }}</label>
+                            <input type="date" id="dob" name="dob">
+                        </div>
+                        <div class="form-group">
+                            <label for="country">{{ t('onboarding.form_country') }}</label>
+                            <input type="text" id="country" name="country" placeholder="{{ t('onboarding.form_country_placeholder') }}">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="languages">{{ t('onboarding.form_languages') }}</label>
+                        <input type="text" id="languages" name="languages" placeholder="{{ t('onboarding.form_languages_placeholder') }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="conditions">{{ t('onboarding.form_conditions') }}</label>
+                        <textarea id="conditions" name="conditions" rows="3" placeholder="{{ t('onboarding.form_conditions_placeholder') }}"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="medications">{{ t('onboarding.form_medications') }}</label>
+                        <textarea id="medications" name="medications" rows="3" placeholder="{{ t('onboarding.form_medications_placeholder') }}"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="emergency_contact">{{ t('onboarding.form_emergency') }}</label>
+                        <input type="text" id="emergency_contact" name="emergency_contact" placeholder="{{ t('onboarding.form_emergency_placeholder') }}">
+                    </div>
+                </form>
+
+                <div class="step-actions">
+                    <a href="{{ url_for('onboarding_step', step=4) }}" class="btn btn-secondary">
+                        ← {{ t('onboarding.back') }}
+                    </a>
+                    <a href="{{ url_for('onboarding_step', step=6) }}" class="btn btn-primary" onclick="saveProfileData()">
+                        {{ t('onboarding.continue') }} →
+                    </a>
+                </div>
+            </div>
+
+            {% elif step == 6 %}
+            <!-- Step 6: Complete -->
+            <div class="onboarding-step" data-step="6">
+                <div class="step-icon completion-icon">🎉</div>
+                <h1>{{ t('onboarding.complete_title') }}</h1>
+                <p class="step-description">{{ t('onboarding.complete_desc') }}</p>
+
+                <div class="completion-summary">
+                    <h3>{{ t('onboarding.what_learned') }}</h3>
+                    <div class="summary-items">
+                        <div class="summary-item">
+                            <span class="check">✓</span>
+                            <span>{{ t('onboarding.learned1') }}</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="check">✓</span>
+                            <span>{{ t('onboarding.learned2') }}</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="check">✓</span>
+                            <span>{{ t('onboarding.learned3') }}</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="check">✓</span>
+                            <span>{{ t('onboarding.learned4') }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="next-steps">
+                    <h3>{{ t('onboarding.next_steps') }}</h3>
+                    <p>{{ t('onboarding.next_steps_desc') }}</p>
+                </div>
+
+                <form action="{{ url_for('onboarding_complete') }}" method="POST">
+                    <div class="step-actions">
+                        <a href="{{ url_for('onboarding_step', step=5) }}" class="btn btn-secondary">
+                            ← {{ t('onboarding.back') }}
+                        </a>
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            {{ t('onboarding.go_to_dashboard') }} →
+                        </button>
+                    </div>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+{% block extra_js %}
+<script>
+function saveProfileData() {
+    const form = document.getElementById('profile-form');
+    if (form) {
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+
+        fetch('/api/save-profile', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        });
+    }
+}
+</script>
+{% endblock %}
+{% endblock %}

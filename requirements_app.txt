@@ -1,0 +1,5 @@
+# HealthBridge - Refugee Healthcare Platform
+# Core dependencies
+
+Flask>=2.0.0
+Werkzeug>=2.0.0

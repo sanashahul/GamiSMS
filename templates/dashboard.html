@@ -1,0 +1,281 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t('dashboard.title') }} - {{ t('app.name') }}{% endblock %}
+
+{% block content %}
+<section class="dashboard">
+    <div class="container">
+        <!-- Dashboard Header -->
+        <div class="dashboard-header">
+            <div class="welcome-message">
+                <h1>{{ t('dashboard.welcome', name=user_profile.get('name', t('dashboard.user'))) }}</h1>
+                <p>{{ t('dashboard.subtitle') }}</p>
+            </div>
+            <div class="quick-actions">
+                <a href="{{ url_for('emergency') }}" class="btn btn-danger">
+                    🚨 {{ t('dashboard.emergency') }}
+                </a>
+            </div>
+        </div>
+
+        <!-- Dashboard Grid -->
+        <div class="dashboard-grid">
+            <!-- Health Check-in Card -->
+            <div class="dashboard-card health-checkin-card">
+                <div class="card-header">
+                    <h2>{{ t('dashboard.daily_checkin') }}</h2>
+                    <span class="card-icon">💊</span>
+                </div>
+                <div class="card-content">
+                    <p>{{ t('dashboard.checkin_prompt') }}</p>
+                    <form id="checkin-form" class="checkin-form">
+                        <div class="feeling-scale">
+                            <label>{{ t('dashboard.how_feeling') }}</label>
+                            <div class="feeling-options">
+                                <button type="button" class="feeling-btn" data-value="5" title="{{ t('dashboard.feeling_great') }}">😊</button>
+                                <button type="button" class="feeling-btn" data-value="4" title="{{ t('dashboard.feeling_good') }}">🙂</button>
+                                <button type="button" class="feeling-btn" data-value="3" title="{{ t('dashboard.feeling_okay') }}">😐</button>
+                                <button type="button" class="feeling-btn" data-value="2" title="{{ t('dashboard.feeling_notgreat') }}">😕</button>
+                                <button type="button" class="feeling-btn" data-value="1" title="{{ t('dashboard.feeling_bad') }}">😢</button>
+                            </div>
+                        </div>
+                        <input type="hidden" name="feeling" id="feeling-value">
+                        <button type="submit" class="btn btn-primary btn-block">{{ t('dashboard.submit_checkin') }}</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Quick Links Card -->
+            <div class="dashboard-card quick-links-card">
+                <div class="card-header">
+                    <h2>{{ t('dashboard.quick_links') }}</h2>
+                    <span class="card-icon">🔗</span>
+                </div>
+                <div class="card-content">
+                    <div class="quick-link-grid">
+                        <a href="{{ url_for('health_info') }}" class="quick-link">
+                            <span class="link-icon">📚</span>
+                            <span>{{ t('dashboard.health_info') }}</span>
+                        </a>
+                        <a href="{{ url_for('appointments') }}" class="quick-link">
+                            <span class="link-icon">📅</span>
+                            <span>{{ t('dashboard.appointments') }}</span>
+                        </a>
+                        <a href="{{ url_for('medications') }}" class="quick-link">
+                            <span class="link-icon">💊</span>
+                            <span>{{ t('dashboard.medications') }}</span>
+                        </a>
+                        <a href="{{ url_for('resources') }}" class="quick-link">
+                            <span class="link-icon">🤝</span>
+                            <span>{{ t('dashboard.resources') }}</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upcoming Appointments Card -->
+            <div class="dashboard-card appointments-card">
+                <div class="card-header">
+                    <h2>{{ t('dashboard.upcoming_appointments') }}</h2>
+                    <span class="card-icon">📅</span>
+                </div>
+                <div class="card-content">
+                    <div class="empty-state">
+                        <span class="empty-icon">📅</span>
+                        <p>{{ t('dashboard.no_appointments') }}</p>
+                        <a href="{{ url_for('appointments') }}" class="btn btn-secondary btn-sm">
+                            {{ t('dashboard.add_appointment') }}
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Medications Card -->
+            <div class="dashboard-card medications-card">
+                <div class="card-header">
+                    <h2>{{ t('dashboard.my_medications') }}</h2>
+                    <span class="card-icon">💊</span>
+                </div>
+                <div class="card-content">
+                    {% if user_profile.get('medications') %}
+                    <div class="medications-list">
+                        <p>{{ user_profile.get('medications') }}</p>
+                    </div>
+                    {% else %}
+                    <div class="empty-state">
+                        <span class="empty-icon">💊</span>
+                        <p>{{ t('dashboard.no_medications') }}</p>
+                        <a href="{{ url_for('medications') }}" class="btn btn-secondary btn-sm">
+                            {{ t('dashboard.add_medication') }}
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Health Tips Card -->
+            <div class="dashboard-card tips-card full-width">
+                <div class="card-header">
+                    <h2>{{ t('dashboard.health_tips') }}</h2>
+                    <span class="card-icon">💡</span>
+                </div>
+                <div class="card-content">
+                    <div class="tips-carousel">
+                        <div class="tip-item active">
+                            <div class="tip-icon">💧</div>
+                            <div class="tip-content">
+                                <h3>{{ t('dashboard.tip1_title') }}</h3>
+                                <p>{{ t('dashboard.tip1_desc') }}</p>
+                            </div>
+                        </div>
+                        <div class="tip-item">
+                            <div class="tip-icon">🏃</div>
+                            <div class="tip-content">
+                                <h3>{{ t('dashboard.tip2_title') }}</h3>
+                                <p>{{ t('dashboard.tip2_desc') }}</p>
+                            </div>
+                        </div>
+                        <div class="tip-item">
+                            <div class="tip-icon">😴</div>
+                            <div class="tip-content">
+                                <h3>{{ t('dashboard.tip3_title') }}</h3>
+                                <p>{{ t('dashboard.tip3_desc') }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tips-nav">
+                        <button class="tip-nav-btn" onclick="changeTip(-1)">←</button>
+                        <div class="tip-dots">
+                            <span class="tip-dot active" data-index="0"></span>
+                            <span class="tip-dot" data-index="1"></span>
+                            <span class="tip-dot" data-index="2"></span>
+                        </div>
+                        <button class="tip-nav-btn" onclick="changeTip(1)">→</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Emergency Card -->
+            <div class="dashboard-card emergency-card">
+                <div class="card-header">
+                    <h2>{{ t('dashboard.emergency_info') }}</h2>
+                    <span class="card-icon">🚨</span>
+                </div>
+                <div class="card-content">
+                    <div class="emergency-numbers">
+                        <div class="emergency-item">
+                            <span class="emergency-label">{{ t('dashboard.emergency_services') }}</span>
+                            <a href="tel:911" class="emergency-number">911</a>
+                        </div>
+                        <div class="emergency-item">
+                            <span class="emergency-label">{{ t('dashboard.poison_control') }}</span>
+                            <a href="tel:1-800-222-1222" class="emergency-number">1-800-222-1222</a>
+                        </div>
+                        <div class="emergency-item">
+                            <span class="emergency-label">{{ t('dashboard.crisis_line') }}</span>
+                            <a href="tel:988" class="emergency-number">988</a>
+                        </div>
+                    </div>
+                    <a href="{{ url_for('emergency') }}" class="btn btn-danger btn-block">
+                        {{ t('dashboard.more_emergency_info') }}
+                    </a>
+                </div>
+            </div>
+
+            <!-- Resources Card -->
+            <div class="dashboard-card resources-card">
+                <div class="card-header">
+                    <h2>{{ t('dashboard.helpful_resources') }}</h2>
+                    <span class="card-icon">🤝</span>
+                </div>
+                <div class="card-content">
+                    <ul class="resources-list">
+                        <li>
+                            <a href="{{ url_for('resources') }}#translation">
+                                🗣️ {{ t('dashboard.resource_translation') }}
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('resources') }}#transportation">
+                                🚗 {{ t('dashboard.resource_transportation') }}
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('resources') }}#financial">
+                                💰 {{ t('dashboard.resource_financial') }}
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('resources') }}#mental-health">
+                                🧠 {{ t('dashboard.resource_mental') }}
+                            </a>
+                        </li>
+                    </ul>
+                    <a href="{{ url_for('resources') }}" class="btn btn-secondary btn-block">
+                        {{ t('dashboard.view_all_resources') }}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% block extra_js %}
+<script>
+// Feeling buttons
+document.querySelectorAll('.feeling-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        document.querySelectorAll('.feeling-btn').forEach(b => b.classList.remove('selected'));
+        this.classList.add('selected');
+        document.getElementById('feeling-value').value = this.dataset.value;
+    });
+});
+
+// Check-in form
+document.getElementById('checkin-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const feeling = document.getElementById('feeling-value').value;
+    if (!feeling) {
+        alert('{{ t("dashboard.select_feeling") }}');
+        return;
+    }
+
+    fetch('/api/health-checkin', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            feeling: feeling,
+            date: new Date().toISOString()
+        })
+    }).then(response => response.json())
+      .then(data => {
+          if (data.success) {
+              alert('{{ t("dashboard.checkin_success") }}');
+          }
+      });
+});
+
+// Tips carousel
+let currentTip = 0;
+const tips = document.querySelectorAll('.tip-item');
+const dots = document.querySelectorAll('.tip-dot');
+
+function changeTip(direction) {
+    tips[currentTip].classList.remove('active');
+    dots[currentTip].classList.remove('active');
+
+    currentTip += direction;
+    if (currentTip >= tips.length) currentTip = 0;
+    if (currentTip < 0) currentTip = tips.length - 1;
+
+    tips[currentTip].classList.add('active');
+    dots[currentTip].classList.add('active');
+}
+
+// Auto-rotate tips
+setInterval(() => changeTip(1), 5000);
+</script>
+{% endblock %}
+{% endblock %}
