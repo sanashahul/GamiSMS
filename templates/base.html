@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="{{ locale }}" dir="{{ 'rtl' if is_rtl else 'ltr' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ t('app.name') }}{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="{{ 'rtl' if is_rtl else 'ltr' }}">
+    <!-- Language Selector -->
+    <div class="language-bar">
+        <div class="container">
+            <div class="language-selector">
+                <span class="lang-icon">🌐</span>
+                <select id="language-select" onchange="changeLanguage(this.value)">
+                    {% for code, name in languages.items() %}
+                    <option value="{{ code }}" {{ 'selected' if code == locale else '' }}>{{ name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="main-header">
+        <div class="container">
+            <a href="{{ url_for('index') }}" class="logo">
+                <span class="logo-icon">🏥</span>
+                <span class="logo-text">{{ t('app.name') }}</span>
+            </a>
+            <nav class="main-nav">
+                <a href="{{ url_for('index') }}">{{ t('nav.home') }}</a>
+                <a href="{{ url_for('onboarding') }}">{{ t('nav.get_started') }}</a>
+                <a href="{{ url_for('dashboard') }}">{{ t('nav.dashboard') }}</a>
+                <a href="{{ url_for('emergency') }}" class="emergency-btn">{{ t('nav.emergency') }}</a>
+            </nav>
+            <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
+        </div>
+    </header>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobile-menu">
+        <a href="{{ url_for('index') }}">{{ t('nav.home') }}</a>
+        <a href="{{ url_for('onboarding') }}">{{ t('nav.get_started') }}</a>
+        <a href="{{ url_for('dashboard') }}">{{ t('nav.dashboard') }}</a>
+        <a href="{{ url_for('emergency') }}" class="emergency-btn">{{ t('nav.emergency') }}</a>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>{{ t('footer.about') }}</h4>
+                    <p>{{ t('footer.about_text') }}</p>
+                </div>
+                <div class="footer-section">
+                    <h4>{{ t('footer.quick_links') }}</h4>
+                    <ul>
+                        <li><a href="{{ url_for('health_info') }}">{{ t('nav.health_info') }}</a></li>
+                        <li><a href="{{ url_for('resources') }}">{{ t('nav.resources') }}</a></li>
+                        <li><a href="{{ url_for('emergency') }}">{{ t('nav.emergency') }}</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>{{ t('footer.emergency') }}</h4>
+                    <p class="emergency-number">📞 911</p>
+                    <p>{{ t('footer.emergency_text') }}</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>{{ t('footer.copyright') }}</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

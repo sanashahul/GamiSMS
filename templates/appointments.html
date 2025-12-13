@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t('appointments.title') }} - {{ t('app.name') }}{% endblock %}
+
+{% block content %}
+<section class="appointments-page">
+    <div class="container">
+        <div class="page-header">
+            <h1>{{ t('appointments.title') }}</h1>
+            <p>{{ t('appointments.subtitle') }}</p>
+        </div>
+
+        <div class="appointments-layout">
+            <!-- Add Appointment Form -->
+            <div class="appointment-form-section">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>{{ t('appointments.add_new') }}</h2>
+                    </div>
+                    <div class="card-content">
+                        <form id="appointment-form" class="appointment-form">
+                            <div class="form-group">
+                                <label for="apt-type">{{ t('appointments.type') }}</label>
+                                <select id="apt-type" name="type" required>
+                                    <option value="">{{ t('appointments.select_type') }}</option>
+                                    <option value="primary">{{ t('appointments.type_primary') }}</option>
+                                    <option value="specialist">{{ t('appointments.type_specialist') }}</option>
+                                    <option value="dental">{{ t('appointments.type_dental') }}</option>
+                                    <option value="vision">{{ t('appointments.type_vision') }}</option>
+                                    <option value="mental">{{ t('appointments.type_mental') }}</option>
+                                    <option value="other">{{ t('appointments.type_other') }}</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="apt-doctor">{{ t('appointments.doctor_name') }}</label>
+                                <input type="text" id="apt-doctor" name="doctor" placeholder="{{ t('appointments.doctor_placeholder') }}">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="apt-location">{{ t('appointments.location') }}</label>
+                                <input type="text" id="apt-location" name="location" placeholder="{{ t('appointments.location_placeholder') }}">
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="apt-date">{{ t('appointments.date') }}</label>
+                                    <input type="date" id="apt-date" name="date" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="apt-time">{{ t('appointments.time') }}</label>
+                                    <input type="time" id="apt-time" name="time" required>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="apt-notes">{{ t('appointments.notes') }}</label>
+                                <textarea id="apt-notes" name="notes" rows="3" placeholder="{{ t('appointments.notes_placeholder') }}"></textarea>
+                            </div>
+
+                            <div class="form-group checkbox-group">
+                                <label>
+                                    <input type="checkbox" name="need_interpreter" id="apt-interpreter">
+                                    {{ t('appointments.need_interpreter') }}
+                                </label>
+                            </div>
+
+                            <div class="form-group checkbox-group">
+                                <label>
+                                    <input type="checkbox" name="need_transport" id="apt-transport">
+                                    {{ t('appointments.need_transport') }}
+                                </label>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-block">
+                                {{ t('appointments.save') }}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upcoming Appointments -->
+            <div class="appointments-list-section">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>{{ t('appointments.upcoming') }}</h2>
+                    </div>
+                    <div class="card-content">
+                        <div id="appointments-list" class="appointments-list">
+                            <div class="empty-state">
+                                <span class="empty-icon">📅</span>
+                                <p>{{ t('appointments.no_appointments') }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tips Section -->
+                <div class="card tips-card">
+                    <div class="card-header">
+                        <h2>{{ t('appointments.tips_title') }}</h2>
+                    </div>
+                    <div class="card-content">
+                        <ul class="tips-list">
+                            <li>{{ t('appointments.tip1') }}</li>
+                            <li>{{ t('appointments.tip2') }}</li>
+                            <li>{{ t('appointments.tip3') }}</li>
+                            <li>{{ t('appointments.tip4') }}</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% block extra_js %}
+<script>
+let appointments = JSON.parse(localStorage.getItem('appointments') || '[]');
+
+function renderAppointments() {
+    const list = document.getElementById('appointments-list');
+
+    if (appointments.length === 0) {
+        list.innerHTML = `
+            <div class="empty-state">
+                <span class="empty-icon">📅</span>
+                <p>{{ t('appointments.no_appointments') }}</p>
+            </div>
+        `;
+        return;
+    }
+
+    // Sort by date
+    appointments.sort((a, b) => new Date(a.date + ' ' + a.time) - new Date(b.date + ' ' + b.time));
+
+    list.innerHTML = appointments.map((apt, index) => `
+        <div class="appointment-item">
+            <div class="appointment-date">
+                <span class="month">${new Date(apt.date).toLocaleDateString('{{ locale }}', {month: 'short'})}</span>
+                <span class="day">${new Date(apt.date).getDate()}</span>
+            </div>
+            <div class="appointment-details">
+                <h4>${apt.doctor || getTypeLabel(apt.type)}</h4>
+                <p class="apt-type">${getTypeLabel(apt.type)}</p>
+                <p class="apt-time">🕐 ${apt.time}</p>
+                ${apt.location ? `<p class="apt-location">📍 ${apt.location}</p>` : ''}
+                ${apt.need_interpreter ? '<span class="apt-badge">🗣️ {{ t("appointments.interpreter") }}</span>' : ''}
+                ${apt.need_transport ? '<span class="apt-badge">🚗 {{ t("appointments.transport") }}</span>' : ''}
+            </div>
+            <button class="btn-delete" onclick="deleteAppointment(${index})">×</button>
+        </div>
+    `).join('');
+}
+
+function getTypeLabel(type) {
+    const labels = {
+        'primary': '{{ t("appointments.type_primary") }}',
+        'specialist': '{{ t("appointments.type_specialist") }}',
+        'dental': '{{ t("appointments.type_dental") }}',
+        'vision': '{{ t("appointments.type_vision") }}',
+        'mental': '{{ t("appointments.type_mental") }}',
+        'other': '{{ t("appointments.type_other") }}'
+    };
+    return labels[type] || type;
+}
+
+function deleteAppointment(index) {
+    if (confirm('{{ t("appointments.confirm_delete") }}')) {
+        appointments.splice(index, 1);
+        localStorage.setItem('appointments', JSON.stringify(appointments));
+        renderAppointments();
+    }
+}
+
+document.getElementById('appointment-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const formData = new FormData(this);
+    const apt = {
+        type: formData.get('type'),
+        doctor: formData.get('doctor'),
+        location: formData.get('location'),
+        date: formData.get('date'),
+        time: formData.get('time'),
+        notes: formData.get('notes'),
+        need_interpreter: formData.get('need_interpreter') === 'on',
+        need_transport: formData.get('need_transport') === 'on'
+    };
+
+    appointments.push(apt);
+    localStorage.setItem('appointments', JSON.stringify(appointments));
+    renderAppointments();
+    this.reset();
+});
+
+// Initial render
+renderAppointments();
+</script>
+{% endblock %}
+{% endblock %}

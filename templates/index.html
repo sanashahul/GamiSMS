@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t('app.name') }} - {{ t('home.title') }}{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero">
+    <div class="container">
+        <div class="hero-content">
+            <h1>{{ t('home.hero_title') }}</h1>
+            <p class="hero-subtitle">{{ t('home.hero_subtitle') }}</p>
+            <div class="hero-buttons">
+                <a href="{{ url_for('onboarding') }}" class="btn btn-primary btn-lg">
+                    {{ t('home.get_started') }}
+                </a>
+                <a href="{{ url_for('dashboard') }}" class="btn btn-secondary btn-lg">
+                    {{ t('home.view_dashboard') }}
+                </a>
+            </div>
+        </div>
+        <div class="hero-image">
+            <div class="hero-illustration">
+                <div class="illustration-circle">
+                    <span class="illustration-icon">🏥</span>
+                </div>
+                <div class="floating-icons">
+                    <span class="float-icon" style="--delay: 0s">❤️</span>
+                    <span class="float-icon" style="--delay: 0.5s">💊</span>
+                    <span class="float-icon" style="--delay: 1s">🩺</span>
+                    <span class="float-icon" style="--delay: 1.5s">📋</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features">
+    <div class="container">
+        <h2 class="section-title">{{ t('home.features_title') }}</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">📚</div>
+                <h3>{{ t('home.feature1_title') }}</h3>
+                <p>{{ t('home.feature1_desc') }}</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🌍</div>
+                <h3>{{ t('home.feature2_title') }}</h3>
+                <p>{{ t('home.feature2_desc') }}</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h3>{{ t('home.feature3_title') }}</h3>
+                <p>{{ t('home.feature3_desc') }}</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🤝</div>
+                <h3>{{ t('home.feature4_title') }}</h3>
+                <p>{{ t('home.feature4_desc') }}</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works Section -->
+<section class="how-it-works">
+    <div class="container">
+        <h2 class="section-title">{{ t('home.how_it_works') }}</h2>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <h3>{{ t('home.step1_title') }}</h3>
+                <p>{{ t('home.step1_desc') }}</p>
+            </div>
+            <div class="step-arrow">→</div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <h3>{{ t('home.step2_title') }}</h3>
+                <p>{{ t('home.step2_desc') }}</p>
+            </div>
+            <div class="step-arrow">→</div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <h3>{{ t('home.step3_title') }}</h3>
+                <p>{{ t('home.step3_desc') }}</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta">
+    <div class="container">
+        <div class="cta-content">
+            <h2>{{ t('home.cta_title') }}</h2>
+            <p>{{ t('home.cta_subtitle') }}</p>
+            <a href="{{ url_for('onboarding') }}" class="btn btn-primary btn-lg">
+                {{ t('home.start_onboarding') }}
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t('emergency.title') }} - {{ t('app.name') }}{% endblock %}
+
+{% block content %}
+<section class="emergency-page">
+    <div class="container">
+        <!-- Emergency Banner -->
+        <div class="emergency-banner">
+            <div class="banner-content">
+                <h1>🚨 {{ t('emergency.title') }}</h1>
+                <p>{{ t('emergency.subtitle') }}</p>
+            </div>
+        </div>
+
+        <!-- Main Emergency Numbers -->
+        <div class="emergency-numbers-grid">
+            <a href="tel:911" class="emergency-card primary">
+                <span class="emergency-icon">🚑</span>
+                <h2>911</h2>
+                <p>{{ t('emergency.call_911') }}</p>
+                <span class="tap-to-call">{{ t('emergency.tap_call') }}</span>
+            </a>
+
+            <a href="tel:988" class="emergency-card crisis">
+                <span class="emergency-icon">💚</span>
+                <h2>988</h2>
+                <p>{{ t('emergency.mental_crisis') }}</p>
+                <span class="tap-to-call">{{ t('emergency.tap_call') }}</span>
+            </a>
+
+            <a href="tel:1-800-222-1222" class="emergency-card poison">
+                <span class="emergency-icon">☠️</span>
+                <h2>1-800-222-1222</h2>
+                <p>{{ t('emergency.poison_control') }}</p>
+                <span class="tap-to-call">{{ t('emergency.tap_call') }}</span>
+            </a>
+        </div>
+
+        <!-- When to Call 911 -->
+        <div class="info-section">
+            <h2>{{ t('emergency.when_call_911') }}</h2>
+            <div class="symptoms-grid">
+                <div class="symptom-card">
+                    <span class="symptom-icon">💔</span>
+                    <h3>{{ t('emergency.chest_pain') }}</h3>
+                    <p>{{ t('emergency.chest_pain_desc') }}</p>
+                </div>
+                <div class="symptom-card">
+                    <span class="symptom-icon">🧠</span>
+                    <h3>{{ t('emergency.stroke_signs') }}</h3>
+                    <p>{{ t('emergency.stroke_desc') }}</p>
+                </div>
+                <div class="symptom-card">
+                    <span class="symptom-icon">😮‍💨</span>
+                    <h3>{{ t('emergency.breathing') }}</h3>
+                    <p>{{ t('emergency.breathing_desc') }}</p>
+                </div>
+                <div class="symptom-card">
+                    <span class="symptom-icon">🩸</span>
+                    <h3>{{ t('emergency.bleeding') }}</h3>
+                    <p>{{ t('emergency.bleeding_desc') }}</p>
+                </div>
+                <div class="symptom-card">
+                    <span class="symptom-icon">🤕</span>
+                    <h3>{{ t('emergency.injury') }}</h3>
+                    <p>{{ t('emergency.injury_desc') }}</p>
+                </div>
+                <div class="symptom-card">
+                    <span class="symptom-icon">😵</span>
+                    <h3>{{ t('emergency.unconscious') }}</h3>
+                    <p>{{ t('emergency.unconscious_desc') }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- FAST Stroke Recognition -->
+        <div class="info-section fast-section">
+            <h2>{{ t('emergency.fast_title') }}</h2>
+            <p>{{ t('emergency.fast_intro') }}</p>
+            <div class="fast-grid">
+                <div class="fast-item">
+                    <span class="fast-letter">F</span>
+                    <div class="fast-content">
+                        <h3>{{ t('emergency.fast_f') }}</h3>
+                        <p>{{ t('emergency.fast_f_desc') }}</p>
+                    </div>
+                </div>
+                <div class="fast-item">
+                    <span class="fast-letter">A</span>
+                    <div class="fast-content">
+                        <h3>{{ t('emergency.fast_a') }}</h3>
+                        <p>{{ t('emergency.fast_a_desc') }}</p>
+                    </div>
+                </div>
+                <div class="fast-item">
+                    <span class="fast-letter">S</span>
+                    <div class="fast-content">
+                        <h3>{{ t('emergency.fast_s') }}</h3>
+                        <p>{{ t('emergency.fast_s_desc') }}</p>
+                    </div>
+                </div>
+                <div class="fast-item">
+                    <span class="fast-letter">T</span>
+                    <div class="fast-content">
+                        <h3>{{ t('emergency.fast_t') }}</h3>
+                        <p>{{ t('emergency.fast_t_desc') }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Emergency Phrases -->
+        <div class="info-section phrases-section">
+            <h2>{{ t('emergency.phrases_title') }}</h2>
+            <p>{{ t('emergency.phrases_intro') }}</p>
+            <div class="phrases-list">
+                <div class="phrase-card">
+                    <p class="phrase-text">"{{ t('emergency.phrase_help') }}"</p>
+                    <p class="phrase-meaning">{{ t('emergency.phrase_help_meaning') }}</p>
+                </div>
+                <div class="phrase-card">
+                    <p class="phrase-text">"{{ t('emergency.phrase_ambulance') }}"</p>
+                    <p class="phrase-meaning">{{ t('emergency.phrase_ambulance_meaning') }}</p>
+                </div>
+                <div class="phrase-card">
+                    <p class="phrase-text">"{{ t('emergency.phrase_interpreter') }}"</p>
+                    <p class="phrase-meaning">{{ t('emergency.phrase_interpreter_meaning') }}</p>
+                </div>
+                <div class="phrase-card">
+                    <p class="phrase-text">"{{ t('emergency.phrase_address') }}"</p>
+                    <p class="phrase-meaning">{{ t('emergency.phrase_address_meaning') }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Additional Emergency Numbers -->
+        <div class="info-section additional-numbers">
+            <h2>{{ t('emergency.other_numbers') }}</h2>
+            <div class="numbers-grid">
+                <div class="number-item">
+                    <h3>{{ t('emergency.domestic_violence') }}</h3>
+                    <a href="tel:1-800-799-7233">1-800-799-7233</a>
+                </div>
+                <div class="number-item">
+                    <h3>{{ t('emergency.child_abuse') }}</h3>
+                    <a href="tel:1-800-422-4453">1-800-422-4453</a>
+                </div>
+                <div class="number-item">
+                    <h3>{{ t('emergency.human_trafficking') }}</h3>
+                    <a href="tel:1-888-373-7888">1-888-373-7888</a>
+                </div>
+                <div class="number-item">
+                    <h3>{{ t('emergency.substance_abuse') }}</h3>
+                    <a href="tel:1-800-662-4357">1-800-662-4357</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Your Emergency Info -->
+        <div class="info-section personal-emergency">
+            <h2>{{ t('emergency.your_info') }}</h2>
+            <div class="personal-info-form">
+                <form id="emergency-info-form">
+                    <div class="form-group">
+                        <label for="my-address">{{ t('emergency.my_address') }}</label>
+                        <input type="text" id="my-address" name="address" placeholder="{{ t('emergency.address_placeholder') }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="emergency-contact">{{ t('emergency.my_contact') }}</label>
+                        <input type="text" id="emergency-contact" name="contact" placeholder="{{ t('emergency.contact_placeholder') }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="allergies">{{ t('emergency.my_allergies') }}</label>
+                        <input type="text" id="allergies" name="allergies" placeholder="{{ t('emergency.allergies_placeholder') }}">
+                    </div>
+                    <button type="submit" class="btn btn-primary">{{ t('emergency.save_info') }}</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% block extra_js %}
+<script>
+// Load saved emergency info
+const savedInfo = JSON.parse(localStorage.getItem('emergencyInfo') || '{}');
+if (savedInfo.address) document.getElementById('my-address').value = savedInfo.address;
+if (savedInfo.contact) document.getElementById('emergency-contact').value = savedInfo.contact;
+if (savedInfo.allergies) document.getElementById('allergies').value = savedInfo.allergies;
+
+document.getElementById('emergency-info-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const info = {
+        address: formData.get('address'),
+        contact: formData.get('contact'),
+        allergies: formData.get('allergies')
+    };
+    localStorage.setItem('emergencyInfo', JSON.stringify(info));
+    alert('{{ t("emergency.info_saved") }}');
+});
+</script>
+{% endblock %}
+{% endblock %}

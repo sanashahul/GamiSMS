@@ -1,0 +1,278 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t('health_info.title') }} - {{ t('app.name') }}{% endblock %}
+
+{% block content %}
+<section class="health-info-page">
+    <div class="container">
+        <div class="page-header">
+            <h1>{{ t('health_info.title') }}</h1>
+            <p>{{ t('health_info.subtitle') }}</p>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="info-tabs">
+            <button class="tab-btn active" data-tab="basics">{{ t('health_info.tab_basics') }}</button>
+            <button class="tab-btn" data-tab="preventive">{{ t('health_info.tab_preventive') }}</button>
+            <button class="tab-btn" data-tab="mental">{{ t('health_info.tab_mental') }}</button>
+            <button class="tab-btn" data-tab="women">{{ t('health_info.tab_women') }}</button>
+            <button class="tab-btn" data-tab="children">{{ t('health_info.tab_children') }}</button>
+        </div>
+
+        <!-- Tab Content -->
+        <div class="tab-content">
+            <!-- Healthcare Basics -->
+            <div class="tab-pane active" id="basics">
+                <h2>{{ t('health_info.basics_title') }}</h2>
+
+                <div class="info-section">
+                    <h3>{{ t('health_info.find_doctor') }}</h3>
+                    <div class="info-content">
+                        <p>{{ t('health_info.find_doctor_intro') }}</p>
+                        <ol class="step-list">
+                            <li>{{ t('health_info.find_step1') }}</li>
+                            <li>{{ t('health_info.find_step2') }}</li>
+                            <li>{{ t('health_info.find_step3') }}</li>
+                            <li>{{ t('health_info.find_step4') }}</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="info-section">
+                    <h3>{{ t('health_info.appointment_prepare') }}</h3>
+                    <div class="info-content">
+                        <p>{{ t('health_info.appointment_intro') }}</p>
+                        <div class="checklist">
+                            <div class="checklist-item">
+                                <span class="check-icon">☐</span>
+                                <span>{{ t('health_info.bring_id') }}</span>
+                            </div>
+                            <div class="checklist-item">
+                                <span class="check-icon">☐</span>
+                                <span>{{ t('health_info.bring_insurance') }}</span>
+                            </div>
+                            <div class="checklist-item">
+                                <span class="check-icon">☐</span>
+                                <span>{{ t('health_info.bring_medications') }}</span>
+                            </div>
+                            <div class="checklist-item">
+                                <span class="check-icon">☐</span>
+                                <span>{{ t('health_info.bring_questions') }}</span>
+                            </div>
+                            <div class="checklist-item">
+                                <span class="check-icon">☐</span>
+                                <span>{{ t('health_info.bring_records') }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-section highlight-box">
+                    <h3>{{ t('health_info.interpreter_title') }}</h3>
+                    <p>{{ t('health_info.interpreter_text') }}</p>
+                    <div class="phrase-box">
+                        <p class="phrase">"{{ t('health_info.interpreter_phrase') }}"</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Preventive Care -->
+            <div class="tab-pane" id="preventive">
+                <h2>{{ t('health_info.preventive_title') }}</h2>
+
+                <div class="info-section">
+                    <h3>{{ t('health_info.screenings') }}</h3>
+                    <div class="screenings-grid">
+                        <div class="screening-card">
+                            <span class="screening-icon">🩺</span>
+                            <h4>{{ t('health_info.screen_physical') }}</h4>
+                            <p>{{ t('health_info.screen_physical_desc') }}</p>
+                        </div>
+                        <div class="screening-card">
+                            <span class="screening-icon">🦷</span>
+                            <h4>{{ t('health_info.screen_dental') }}</h4>
+                            <p>{{ t('health_info.screen_dental_desc') }}</p>
+                        </div>
+                        <div class="screening-card">
+                            <span class="screening-icon">👁️</span>
+                            <h4>{{ t('health_info.screen_vision') }}</h4>
+                            <p>{{ t('health_info.screen_vision_desc') }}</p>
+                        </div>
+                        <div class="screening-card">
+                            <span class="screening-icon">💉</span>
+                            <h4>{{ t('health_info.screen_vaccines') }}</h4>
+                            <p>{{ t('health_info.screen_vaccines_desc') }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-section">
+                    <h3>{{ t('health_info.healthy_habits') }}</h3>
+                    <div class="habits-list">
+                        <div class="habit-item">
+                            <span class="habit-icon">🥗</span>
+                            <div class="habit-content">
+                                <h4>{{ t('health_info.habit_nutrition') }}</h4>
+                                <p>{{ t('health_info.habit_nutrition_desc') }}</p>
+                            </div>
+                        </div>
+                        <div class="habit-item">
+                            <span class="habit-icon">🏃</span>
+                            <div class="habit-content">
+                                <h4>{{ t('health_info.habit_exercise') }}</h4>
+                                <p>{{ t('health_info.habit_exercise_desc') }}</p>
+                            </div>
+                        </div>
+                        <div class="habit-item">
+                            <span class="habit-icon">😴</span>
+                            <div class="habit-content">
+                                <h4>{{ t('health_info.habit_sleep') }}</h4>
+                                <p>{{ t('health_info.habit_sleep_desc') }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mental Health -->
+            <div class="tab-pane" id="mental">
+                <h2>{{ t('health_info.mental_title') }}</h2>
+
+                <div class="info-section important-notice">
+                    <p>{{ t('health_info.mental_intro') }}</p>
+                </div>
+
+                <div class="info-section">
+                    <h3>{{ t('health_info.common_feelings') }}</h3>
+                    <p>{{ t('health_info.common_feelings_intro') }}</p>
+                    <ul class="feelings-list">
+                        <li>{{ t('health_info.feeling_anxiety') }}</li>
+                        <li>{{ t('health_info.feeling_depression') }}</li>
+                        <li>{{ t('health_info.feeling_grief') }}</li>
+                        <li>{{ t('health_info.feeling_stress') }}</li>
+                        <li>{{ t('health_info.feeling_isolation') }}</li>
+                    </ul>
+                </div>
+
+                <div class="info-section">
+                    <h3>{{ t('health_info.when_seek_help') }}</h3>
+                    <div class="warning-signs">
+                        <div class="sign-item">{{ t('health_info.sign1') }}</div>
+                        <div class="sign-item">{{ t('health_info.sign2') }}</div>
+                        <div class="sign-item">{{ t('health_info.sign3') }}</div>
+                        <div class="sign-item">{{ t('health_info.sign4') }}</div>
+                    </div>
+                </div>
+
+                <div class="info-section highlight-box crisis">
+                    <h3>{{ t('health_info.crisis_resources') }}</h3>
+                    <div class="crisis-numbers">
+                        <div class="crisis-item">
+                            <span class="crisis-label">{{ t('health_info.crisis_line') }}</span>
+                            <a href="tel:988" class="crisis-number">988</a>
+                        </div>
+                        <div class="crisis-item">
+                            <span class="crisis-label">{{ t('health_info.crisis_text') }}</span>
+                            <span class="crisis-number">{{ t('health_info.text_hello') }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Women's Health -->
+            <div class="tab-pane" id="women">
+                <h2>{{ t('health_info.women_title') }}</h2>
+
+                <div class="info-section">
+                    <h3>{{ t('health_info.women_screenings') }}</h3>
+                    <div class="screenings-list">
+                        <div class="screening-item">
+                            <h4>{{ t('health_info.women_pap') }}</h4>
+                            <p>{{ t('health_info.women_pap_desc') }}</p>
+                        </div>
+                        <div class="screening-item">
+                            <h4>{{ t('health_info.women_mammogram') }}</h4>
+                            <p>{{ t('health_info.women_mammogram_desc') }}</p>
+                        </div>
+                        <div class="screening-item">
+                            <h4>{{ t('health_info.women_prenatal') }}</h4>
+                            <p>{{ t('health_info.women_prenatal_desc') }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-section highlight-box">
+                    <h3>{{ t('health_info.pregnancy_care') }}</h3>
+                    <p>{{ t('health_info.pregnancy_intro') }}</p>
+                    <ul>
+                        <li>{{ t('health_info.preg_tip1') }}</li>
+                        <li>{{ t('health_info.preg_tip2') }}</li>
+                        <li>{{ t('health_info.preg_tip3') }}</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Children's Health -->
+            <div class="tab-pane" id="children">
+                <h2>{{ t('health_info.children_title') }}</h2>
+
+                <div class="info-section">
+                    <h3>{{ t('health_info.child_checkups') }}</h3>
+                    <p>{{ t('health_info.child_checkups_intro') }}</p>
+                    <div class="checkup-schedule">
+                        <div class="schedule-item">
+                            <span class="age">{{ t('health_info.age_newborn') }}</span>
+                            <span class="visits">{{ t('health_info.visits_frequent') }}</span>
+                        </div>
+                        <div class="schedule-item">
+                            <span class="age">{{ t('health_info.age_toddler') }}</span>
+                            <span class="visits">{{ t('health_info.visits_regular') }}</span>
+                        </div>
+                        <div class="schedule-item">
+                            <span class="age">{{ t('health_info.age_school') }}</span>
+                            <span class="visits">{{ t('health_info.visits_annual') }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-section">
+                    <h3>{{ t('health_info.vaccinations') }}</h3>
+                    <p>{{ t('health_info.vaccinations_intro') }}</p>
+                    <div class="vaccine-info">
+                        <p>{{ t('health_info.vaccine_free') }}</p>
+                    </div>
+                </div>
+
+                <div class="info-section">
+                    <h3>{{ t('health_info.school_health') }}</h3>
+                    <p>{{ t('health_info.school_health_intro') }}</p>
+                    <ul>
+                        <li>{{ t('health_info.school_tip1') }}</li>
+                        <li>{{ t('health_info.school_tip2') }}</li>
+                        <li>{{ t('health_info.school_tip3') }}</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% block extra_js %}
+<script>
+// Tab functionality
+document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const tabId = this.dataset.tab;
+
+        // Update buttons
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+
+        // Update panes
+        document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+    });
+});
+</script>
+{% endblock %}
+{% endblock %}

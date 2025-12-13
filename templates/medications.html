@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t('medications.title') }} - {{ t('app.name') }}{% endblock %}
+
+{% block content %}
+<section class="medications-page">
+    <div class="container">
+        <div class="page-header">
+            <h1>{{ t('medications.title') }}</h1>
+            <p>{{ t('medications.subtitle') }}</p>
+        </div>
+
+        <div class="medications-layout">
+            <!-- Add Medication Form -->
+            <div class="medication-form-section">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>{{ t('medications.add_new') }}</h2>
+                    </div>
+                    <div class="card-content">
+                        <form id="medication-form" class="medication-form">
+                            <div class="form-group">
+                                <label for="med-name">{{ t('medications.name') }}</label>
+                                <input type="text" id="med-name" name="name" required placeholder="{{ t('medications.name_placeholder') }}">
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="med-dosage">{{ t('medications.dosage') }}</label>
+                                    <input type="text" id="med-dosage" name="dosage" placeholder="{{ t('medications.dosage_placeholder') }}">
+                                </div>
+                                <div class="form-group">
+                                    <label for="med-frequency">{{ t('medications.frequency') }}</label>
+                                    <select id="med-frequency" name="frequency">
+                                        <option value="once">{{ t('medications.freq_once') }}</option>
+                                        <option value="twice">{{ t('medications.freq_twice') }}</option>
+                                        <option value="three">{{ t('medications.freq_three') }}</option>
+                                        <option value="asneeded">{{ t('medications.freq_asneeded') }}</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>{{ t('medications.time_of_day') }}</label>
+                                <div class="checkbox-grid">
+                                    <label class="checkbox-item">
+                                        <input type="checkbox" name="time_morning" value="morning">
+                                        <span>🌅 {{ t('medications.morning') }}</span>
+                                    </label>
+                                    <label class="checkbox-item">
+                                        <input type="checkbox" name="time_afternoon" value="afternoon">
+                                        <span>☀️ {{ t('medications.afternoon') }}</span>
+                                    </label>
+                                    <label class="checkbox-item">
+                                        <input type="checkbox" name="time_evening" value="evening">
+                                        <span>🌆 {{ t('medications.evening') }}</span>
+                                    </label>
+                                    <label class="checkbox-item">
+                                        <input type="checkbox" name="time_night" value="night">
+                                        <span>🌙 {{ t('medications.night') }}</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="med-instructions">{{ t('medications.instructions') }}</label>
+                                <textarea id="med-instructions" name="instructions" rows="2" placeholder="{{ t('medications.instructions_placeholder') }}"></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="med-prescriber">{{ t('medications.prescriber') }}</label>
+                                <input type="text" id="med-prescriber" name="prescriber" placeholder="{{ t('medications.prescriber_placeholder') }}">
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-block">
+                                {{ t('medications.save') }}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Medications List -->
+            <div class="medications-list-section">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>{{ t('medications.my_medications') }}</h2>
+                    </div>
+                    <div class="card-content">
+                        <div id="medications-list" class="medications-list">
+                            <div class="empty-state">
+                                <span class="empty-icon">💊</span>
+                                <p>{{ t('medications.no_medications') }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Safety Tips -->
+                <div class="card safety-card">
+                    <div class="card-header">
+                        <h2>{{ t('medications.safety_title') }}</h2>
+                    </div>
+                    <div class="card-content">
+                        <ul class="safety-list">
+                            <li>{{ t('medications.safety1') }}</li>
+                            <li>{{ t('medications.safety2') }}</li>
+                            <li>{{ t('medications.safety3') }}</li>
+                            <li>{{ t('medications.safety4') }}</li>
+                            <li>{{ t('medications.safety5') }}</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Pharmacy Help -->
+                <div class="card pharmacy-card">
+                    <div class="card-header">
+                        <h2>{{ t('medications.pharmacy_help') }}</h2>
+                    </div>
+                    <div class="card-content">
+                        <p>{{ t('medications.pharmacy_intro') }}</p>
+                        <div class="phrase-box">
+                            <p class="phrase">"{{ t('medications.pharmacy_phrase') }}"</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% block extra_js %}
+<script>
+let medications = JSON.parse(localStorage.getItem('medications') || '[]');
+
+function renderMedications() {
+    const list = document.getElementById('medications-list');
+
+    if (medications.length === 0) {
+        list.innerHTML = `
+            <div class="empty-state">
+                <span class="empty-icon">💊</span>
+                <p>{{ t('medications.no_medications') }}</p>
+            </div>
+        `;
+        return;
+    }
+
+    list.innerHTML = medications.map((med, index) => `
+        <div class="medication-item">
+            <div class="medication-icon">💊</div>
+            <div class="medication-details">
+                <h4>${med.name}</h4>
+                ${med.dosage ? `<p class="med-dosage">${med.dosage}</p>` : ''}
+                <p class="med-frequency">${getFrequencyLabel(med.frequency)}</p>
+                <div class="med-times">
+                    ${med.times.map(t => `<span class="time-badge">${getTimeIcon(t)} ${getTimeLabel(t)}</span>`).join('')}
+                </div>
+                ${med.instructions ? `<p class="med-instructions">${med.instructions}</p>` : ''}
+            </div>
+            <button class="btn-delete" onclick="deleteMedication(${index})">×</button>
+        </div>
+    `).join('');
+}
+
+function getFrequencyLabel(freq) {
+    const labels = {
+        'once': '{{ t("medications.freq_once") }}',
+        'twice': '{{ t("medications.freq_twice") }}',
+        'three': '{{ t("medications.freq_three") }}',
+        'asneeded': '{{ t("medications.freq_asneeded") }}'
+    };
+    return labels[freq] || freq;
+}
+
+function getTimeLabel(time) {
+    const labels = {
+        'morning': '{{ t("medications.morning") }}',
+        'afternoon': '{{ t("medications.afternoon") }}',
+        'evening': '{{ t("medications.evening") }}',
+        'night': '{{ t("medications.night") }}'
+    };
+    return labels[time] || time;
+}
+
+function getTimeIcon(time) {
+    const icons = {
+        'morning': '🌅',
+        'afternoon': '☀️',
+        'evening': '🌆',
+        'night': '🌙'
+    };
+    return icons[time] || '';
+}
+
+function deleteMedication(index) {
+    if (confirm('{{ t("medications.confirm_delete") }}')) {
+        medications.splice(index, 1);
+        localStorage.setItem('medications', JSON.stringify(medications));
+        renderMedications();
+    }
+}
+
+document.getElementById('medication-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const formData = new FormData(this);
+    const times = [];
+    if (formData.get('time_morning')) times.push('morning');
+    if (formData.get('time_afternoon')) times.push('afternoon');
+    if (formData.get('time_evening')) times.push('evening');
+    if (formData.get('time_night')) times.push('night');
+
+    const med = {
+        name: formData.get('name'),
+        dosage: formData.get('dosage'),
+        frequency: formData.get('frequency'),
+        times: times,
+        instructions: formData.get('instructions'),
+        prescriber: formData.get('prescriber')
+    };
+
+    medications.push(med);
+    localStorage.setItem('medications', JSON.stringify(medications));
+    renderMedications();
+    this.reset();
+});
+
+// Initial render
+renderMedications();
+</script>
+{% endblock %}
+{% endblock %}
