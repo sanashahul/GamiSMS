@@ -223,3 +223,6 @@ struct LocationView: View {
     LocationView(onContinue: {})
         .environmentObject(UserProfile())
 }
+
+// Alias for the new onboarding flow
+typealias LocationInputView = LocationView
