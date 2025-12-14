@@ -214,7 +214,17 @@ struct LocalizedStrings {
         "save": "Save",
         "close": "Close",
         "yes": "Yes",
-        "no": "No"
+        "no": "No",
+
+        // Clinic Search & Loading
+        "searching_nearby": "Searching nearby...",
+        "clinics_found": "clinics found",
+        "finding_best_clinics": "Finding the best clinics for your needs",
+        "no_clinics_found": "No clinics found",
+        "try_adjusting_filters": "Try adjusting your filters or search, or enable location services to find clinics near you.",
+        "enable_location_tip": "Tip: Enable location services to automatically find clinics near you",
+        "open_settings": "Open Settings",
+        "mapkit_clinics_note": "Some clinics found via search. Call ahead to confirm services for uninsured patients."
     ]
 
     // MARK: - Spanish Strings
@@ -404,7 +414,17 @@ struct LocalizedStrings {
         "save": "Guardar",
         "close": "Cerrar",
         "yes": "Sí",
-        "no": "No"
+        "no": "No",
+
+        // Clinic Search & Loading
+        "searching_nearby": "Buscando cerca...",
+        "clinics_found": "clínicas encontradas",
+        "finding_best_clinics": "Encontrando las mejores clínicas para tus necesidades",
+        "no_clinics_found": "No se encontraron clínicas",
+        "try_adjusting_filters": "Intenta ajustar tus filtros o búsqueda, o activa los servicios de ubicación para encontrar clínicas cerca de ti.",
+        "enable_location_tip": "Consejo: Activa los servicios de ubicación para encontrar clínicas cerca de ti automáticamente",
+        "open_settings": "Abrir Configuración",
+        "mapkit_clinics_note": "Algunas clínicas encontradas por búsqueda. Llama antes para confirmar servicios para pacientes sin seguro."
     ]
 }
 

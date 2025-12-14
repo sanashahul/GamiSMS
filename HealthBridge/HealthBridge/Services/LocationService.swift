@@ -109,76 +109,210 @@ class ClinicService: ObservableObject {
     @Published var clinics: [Clinic] = []
     @Published var isLoading = false
     @Published var nearbyMapKitClinics: [Clinic] = []
+    @Published var combinedClinics: [Clinic] = []
+    @Published var searchComplete = false
+    @Published var isSearchingMapKit = false
 
-    // Search for nearby health centers using MapKit
-    func searchNearbyHealthCenters(near location: CLLocation, completion: @escaping ([Clinic]) -> Void) {
-        let request = MKLocalSearch.Request()
-        request.naturalLanguageQuery = "community health center clinic"
-        request.region = MKCoordinateRegion(
-            center: location.coordinate,
-            latitudinalMeters: 40000, // ~25 miles
-            longitudinalMeters: 40000
-        )
+    private let minimumStaticClinics = 3 // Trigger MapKit if fewer than this many static results
+    private let defaultSearchRadius: Double = 50.0 // miles
 
-        let search = MKLocalSearch(request: request)
-        search.start { [weak self] response, error in
-            guard let response = response else {
-                completion([])
-                return
-            }
+    // MARK: - Main Entry Point: Get clinics for any location
+    // This is the primary method that ClinicFinderView should use
+    func loadClinics(near location: CLLocation, forStatus status: ImmigrationStatus? = nil, radius: Double = 50.0) {
+        isLoading = true
+        searchComplete = false
 
-            let mapKitClinics = response.mapItems.compactMap { item -> Clinic? in
-                guard let name = item.name else { return nil }
+        // First, get static database clinics
+        var staticClinics = getClinicsFromDatabase(near: location, radius: radius)
 
-                let clinicLocation = CLLocation(
-                    latitude: item.placemark.coordinate.latitude,
-                    longitude: item.placemark.coordinate.longitude
-                )
-                let distance = location.distance(from: clinicLocation) / 1609.34
+        // Filter by status if provided
+        if let status = status {
+            staticClinics = filterClinicsForStatus(staticClinics, status: status)
+        }
 
-                return Clinic(
-                    id: UUID(),
-                    name: name,
-                    type: .communityHealth,
-                    address: item.placemark.thoroughfare ?? "",
-                    city: item.placemark.locality ?? "",
-                    state: item.placemark.administrativeArea ?? "",
-                    zipCode: item.placemark.postalCode ?? "",
-                    phoneNumber: item.phoneNumber ?? "",
-                    website: item.url?.absoluteString,
-                    email: nil,
-                    latitude: item.placemark.coordinate.latitude,
-                    longitude: item.placemark.coordinate.longitude,
-                    services: ClinicServices(
-                        acceptsUninsured: true,
-                        slidingScale: true,
-                        freeServices: false,
-                        interpreterAvailable: true,
-                        languages: [.english, .spanish],
-                        walkInsAccepted: false,
-                        telehealth: false,
-                        transportationHelp: false,
-                        mentalHealth: false,
-                        dental: false,
-                        vision: false,
-                        prenatal: false,
-                        pediatric: true,
-                        vaccinations: true,
-                        emergencyMedicaid: false
-                    ),
-                    hours: self?.defaultHours ?? [],
-                    description: "Health center found via Apple Maps. Please call to confirm services and availability.",
-                    specialNotes: "Contact clinic directly to verify services for uninsured patients.",
-                    rating: nil,
-                    reviewCount: 0,
-                    distance: distance
-                )
-            }
-
+        // If we have enough static clinics, use them
+        if staticClinics.count >= minimumStaticClinics {
             DispatchQueue.main.async {
-                self?.nearbyMapKitClinics = mapKitClinics
-                completion(mapKitClinics)
+                self.combinedClinics = staticClinics
+                self.isLoading = false
+                self.searchComplete = true
             }
+        } else {
+            // Not enough static clinics - search MapKit for more
+            isSearchingMapKit = true
+            searchNearbyHealthCenters(near: location) { [weak self] mapKitClinics in
+                guard let self = self else { return }
+
+                DispatchQueue.main.async {
+                    // Combine static and MapKit results, avoiding duplicates
+                    var combined = staticClinics
+
+                    for mapClinic in mapKitClinics {
+                        // Check if this clinic is already in static results (by name similarity)
+                        let isDuplicate = staticClinics.contains { existingClinic in
+                            self.areClinicsLikelySame(existingClinic, mapClinic)
+                        }
+                        if !isDuplicate {
+                            combined.append(mapClinic)
+                        }
+                    }
+
+                    // Sort by distance
+                    combined.sort { ($0.distance ?? 999) < ($1.distance ?? 999) }
+
+                    self.combinedClinics = combined
+                    self.isLoading = false
+                    self.isSearchingMapKit = false
+                    self.searchComplete = true
+                }
+            }
+        }
+    }
+
+    // Check if two clinics are likely the same (to avoid duplicates)
+    private func areClinicsLikelySame(_ clinic1: Clinic, _ clinic2: Clinic) -> Bool {
+        // Check if names are similar
+        let name1 = clinic1.name.lowercased()
+        let name2 = clinic2.name.lowercased()
+
+        if name1 == name2 { return true }
+        if name1.contains(name2) || name2.contains(name1) { return true }
+
+        // Check if addresses are similar
+        let addr1 = clinic1.address.lowercased()
+        let addr2 = clinic2.address.lowercased()
+
+        if !addr1.isEmpty && !addr2.isEmpty && addr1 == addr2 { return true }
+
+        // Check geographic proximity (within 0.1 miles)
+        if let dist1 = clinic1.distance, let dist2 = clinic2.distance {
+            let latDiff = abs(clinic1.latitude - clinic2.latitude)
+            let lonDiff = abs(clinic1.longitude - clinic2.longitude)
+            if latDiff < 0.001 && lonDiff < 0.001 { return true }
+        }
+
+        return false
+    }
+
+    // Search for nearby health centers using MapKit (expanded search)
+    func searchNearbyHealthCenters(near location: CLLocation, completion: @escaping ([Clinic]) -> Void) {
+        var allMapKitClinics: [Clinic] = []
+        let searchGroup = DispatchGroup()
+
+        // Multiple search queries to find more clinics
+        let searchQueries = [
+            "community health center",
+            "free clinic",
+            "federally qualified health center",
+            "family health clinic",
+            "urgent care clinic"
+        ]
+
+        for query in searchQueries {
+            searchGroup.enter()
+
+            let request = MKLocalSearch.Request()
+            request.naturalLanguageQuery = query
+            request.region = MKCoordinateRegion(
+                center: location.coordinate,
+                latitudinalMeters: 80000, // ~50 miles for wider search
+                longitudinalMeters: 80000
+            )
+
+            let search = MKLocalSearch(request: request)
+            search.start { [weak self] response, error in
+                defer { searchGroup.leave() }
+
+                guard let self = self, let response = response else { return }
+
+                let clinics = response.mapItems.compactMap { item -> Clinic? in
+                    guard let name = item.name else { return nil }
+
+                    // Filter out non-health facilities
+                    let nameLower = name.lowercased()
+                    let excludeTerms = ["pharmacy", "cvs", "walgreens", "rite aid", "walmart", "target", "hospital emergency"]
+                    if excludeTerms.contains(where: { nameLower.contains($0) }) {
+                        return nil
+                    }
+
+                    let clinicLocation = CLLocation(
+                        latitude: item.placemark.coordinate.latitude,
+                        longitude: item.placemark.coordinate.longitude
+                    )
+                    let distance = location.distance(from: clinicLocation) / 1609.34
+
+                    // Determine clinic type from name
+                    var clinicType: ClinicType = .communityHealth
+                    if nameLower.contains("free") {
+                        clinicType = .freeClinic
+                    } else if nameLower.contains("urgent") {
+                        clinicType = .urgentCare
+                    } else if nameLower.contains("dental") {
+                        clinicType = .dental
+                    } else if nameLower.contains("mental") || nameLower.contains("behavioral") {
+                        clinicType = .mentalHealth
+                    }
+
+                    return Clinic(
+                        id: UUID(),
+                        name: name,
+                        type: clinicType,
+                        address: item.placemark.thoroughfare ?? item.placemark.name ?? "",
+                        city: item.placemark.locality ?? "",
+                        state: item.placemark.administrativeArea ?? "",
+                        zipCode: item.placemark.postalCode ?? "",
+                        phoneNumber: item.phoneNumber ?? "Call for information",
+                        website: item.url?.absoluteString,
+                        email: nil,
+                        latitude: item.placemark.coordinate.latitude,
+                        longitude: item.placemark.coordinate.longitude,
+                        services: ClinicServices(
+                            acceptsUninsured: true,
+                            slidingScale: true,
+                            freeServices: clinicType == .freeClinic,
+                            interpreterAvailable: true,
+                            languages: [.english, .spanish],
+                            walkInsAccepted: clinicType == .urgentCare,
+                            telehealth: false,
+                            transportationHelp: false,
+                            mentalHealth: clinicType == .mentalHealth,
+                            dental: clinicType == .dental,
+                            vision: false,
+                            prenatal: false,
+                            pediatric: true,
+                            vaccinations: true,
+                            emergencyMedicaid: false
+                        ),
+                        hours: self.defaultHours,
+                        description: "Community health center found via Apple Maps. As a health center, they may offer sliding scale fees based on income. Please call to confirm services, hours, and payment options.",
+                        specialNotes: "📞 Call ahead to confirm:\n• Acceptance of uninsured patients\n• Sliding scale fees available\n• Languages spoken\n• Services offered",
+                        rating: nil,
+                        reviewCount: 0,
+                        distance: distance
+                    )
+                }
+
+                allMapKitClinics.append(contentsOf: clinics)
+            }
+        }
+
+        searchGroup.notify(queue: .main) { [weak self] in
+            // Remove duplicates from MapKit results
+            var uniqueClinics: [Clinic] = []
+            for clinic in allMapKitClinics {
+                let isDuplicate = uniqueClinics.contains { existing in
+                    self?.areClinicsLikelySame(existing, clinic) ?? false
+                }
+                if !isDuplicate {
+                    uniqueClinics.append(clinic)
+                }
+            }
+
+            // Sort by distance
+            uniqueClinics.sort { ($0.distance ?? 999) < ($1.distance ?? 999) }
+
+            self?.nearbyMapKitClinics = uniqueClinics
+            completion(uniqueClinics)
         }
     }
 
@@ -194,9 +328,9 @@ class ClinicService: ObservableObject {
         ]
     }
 
-    // Get clinics near a location with status-based filtering
-    func getClinics(near location: CLLocation, forStatus status: ImmigrationStatus? = nil, radius: Double = 50.0) -> [Clinic] {
-        var clinics = allClinics.map { clinic in
+    // Get clinics from static database near a location
+    func getClinicsFromDatabase(near location: CLLocation, radius: Double = 50.0) -> [Clinic] {
+        return allClinics.map { clinic in
             var updatedClinic = clinic
             let clinicLocation = CLLocation(latitude: clinic.latitude, longitude: clinic.longitude)
             updatedClinic.distance = location.distance(from: clinicLocation) / 1609.34
@@ -204,13 +338,11 @@ class ClinicService: ObservableObject {
         }
         .filter { ($0.distance ?? 0) <= radius }
         .sorted { ($0.distance ?? 0) < ($1.distance ?? 0) }
+    }
 
-        // Filter by status if provided
-        if let status = status {
-            clinics = filterClinicsForStatus(clinics, status: status)
-        }
-
-        return clinics
+    // Legacy method for backward compatibility
+    func getClinics(near location: CLLocation, radius: Double = 50.0) -> [Clinic] {
+        return getClinicsFromDatabase(near: location, radius: radius)
     }
 
     // Filter clinics based on immigration status
