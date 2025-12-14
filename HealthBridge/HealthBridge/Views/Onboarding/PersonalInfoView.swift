@@ -2,9 +2,15 @@ import SwiftUI
 
 struct PersonalInfoView: View {
     @EnvironmentObject var userProfile: UserProfile
+    @StateObject private var localization = LocalizationManager.shared
     let onContinue: () -> Void
 
     @State private var showDatePicker = false
+    @FocusState private var focusedField: Field?
+
+    enum Field {
+        case name, country
+    }
 
     var body: some View {
         VStack(spacing: 24) {
@@ -14,11 +20,11 @@ struct PersonalInfoView: View {
                     .font(.system(size: 50))
                     .foregroundColor(.teal)
 
-                Text("Tell us about yourself")
+                Text(localization.localized("tell_us_about_yourself"))
                     .font(.title2.bold())
                     .multilineTextAlignment(.center)
 
-                Text("This information helps us personalize your experience.")
+                Text(localization.localized("personal_info_desc"))
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
@@ -31,27 +37,37 @@ struct PersonalInfoView: View {
                     // Name
                     FormField(
                         icon: "person",
-                        title: "What's your name?",
-                        placeholder: "Enter your name"
+                        title: localization.localized("whats_your_name"),
+                        placeholder: localization.localized("enter_your_name")
                     ) {
-                        TextField("Your name", text: $userProfile.name)
+                        TextField(localization.localized("enter_your_name"), text: $userProfile.name)
                             .textContentType(.name)
+                            .focused($focusedField, equals: .name)
+                            .submitLabel(.next)
+                            .onSubmit {
+                                focusedField = .country
+                            }
                     }
 
                     // Country of origin
                     FormField(
                         icon: "globe.americas",
-                        title: "Where are you from?",
-                        placeholder: "Country of origin"
+                        title: localization.localized("where_are_you_from"),
+                        placeholder: localization.localized("country_of_origin")
                     ) {
-                        TextField("Country", text: $userProfile.countryOfOrigin)
+                        TextField(localization.localized("country_of_origin"), text: $userProfile.countryOfOrigin)
+                            .focused($focusedField, equals: .country)
+                            .submitLabel(.done)
+                            .onSubmit {
+                                focusedField = nil
+                            }
                     }
 
                     // Arrival date
                     FormField(
                         icon: "calendar",
-                        title: "When did you arrive?",
-                        placeholder: "Approximate date"
+                        title: localization.localized("when_did_you_arrive"),
+                        placeholder: ""
                     ) {
                         DatePicker(
                             "Arrival Date",
@@ -67,17 +83,17 @@ struct PersonalInfoView: View {
                     // Family
                     FormField(
                         icon: "figure.2.and.child.holdinghands",
-                        title: "Do you have children?",
+                        title: localization.localized("do_you_have_children"),
                         placeholder: ""
                     ) {
-                        Toggle("I have children", isOn: $userProfile.hasChildren)
+                        Toggle(localization.localized("i_have_children"), isOn: $userProfile.hasChildren)
                             .tint(.teal)
                     }
 
                     if userProfile.hasChildren {
                         FormField(
                             icon: "number",
-                            title: "How many children?",
+                            title: localization.localized("how_many_children"),
                             placeholder: ""
                         ) {
                             Stepper("\(userProfile.numberOfChildren) child(ren)", value: $userProfile.numberOfChildren, in: 1...10)
@@ -88,22 +104,26 @@ struct PersonalInfoView: View {
                     // Transportation
                     FormField(
                         icon: "car",
-                        title: "Do you have transportation?",
+                        title: localization.localized("do_you_have_transportation"),
                         placeholder: ""
                     ) {
-                        Toggle("I have reliable transportation", isOn: $userProfile.hasTransportation)
+                        Toggle(localization.localized("i_have_transportation"), isOn: $userProfile.hasTransportation)
                             .tint(.teal)
                     }
                 }
                 .padding(.horizontal)
             }
+            .scrollDismissesKeyboard(.interactively)
 
             Spacer()
 
             // Continue button
-            Button(action: onContinue) {
+            Button(action: {
+                focusedField = nil
+                onContinue()
+            }) {
                 HStack {
-                    Text("Continue")
+                    Text(localization.localized("continue"))
                         .fontWeight(.semibold)
                     Image(systemName: "arrow.right")
                 }
@@ -117,6 +137,10 @@ struct PersonalInfoView: View {
             .padding(.bottom, 40)
         }
         .animation(.easeInOut, value: userProfile.hasChildren)
+        .contentShape(Rectangle())
+        .onTapGesture {
+            focusedField = nil
+        }
     }
 }
 

@@ -3,19 +3,34 @@ import MapKit
 
 struct ClinicFinderView: View {
     @EnvironmentObject var userProfile: UserProfile
+    @StateObject private var clinicService = ClinicService.shared
+    @StateObject private var locationService = LocationService.shared
+    @StateObject private var localization = LocalizationManager.shared
+
     @State private var searchText = ""
     @State private var selectedFilter: ClinicType?
     @State private var showFilters = false
     @State private var selectedClinic: Clinic?
     @State private var showMap = false
+    @FocusState private var isSearchFocused: Bool
 
     @State private var region = MKCoordinateRegion(
-        center: CLLocationCoordinate2D(latitude: 41.8781, longitude: -87.6298),
-        span: MKCoordinateSpan(latitudeDelta: 0.1, longitudeDelta: 0.1)
+        center: CLLocationCoordinate2D(latitude: 34.0522, longitude: -118.2437), // LA default
+        span: MKCoordinateSpan(latitudeDelta: 0.15, longitudeDelta: 0.15)
     )
 
+    var allClinics: [Clinic] {
+        // Get clinics from service, prioritize based on location
+        if let location = locationService.currentLocation {
+            return clinicService.getClinics(near: location, radius: 100)
+        } else if !userProfile.zipCode.isEmpty {
+            return clinicService.getClinics(forZipCode: userProfile.zipCode)
+        }
+        return clinicService.allClinics
+    }
+
     var filteredClinics: [Clinic] {
-        var clinics = Clinic.samples
+        var clinics = allClinics
 
         if let filter = selectedFilter {
             clinics = clinics.filter { $0.type == filter }
@@ -24,7 +39,8 @@ struct ClinicFinderView: View {
         if !searchText.isEmpty {
             clinics = clinics.filter {
                 $0.name.localizedCaseInsensitiveContains(searchText) ||
-                $0.address.localizedCaseInsensitiveContains(searchText)
+                $0.address.localizedCaseInsensitiveContains(searchText) ||
+                $0.city.localizedCaseInsensitiveContains(searchText)
             }
         }
 
@@ -40,7 +56,8 @@ struct ClinicFinderView: View {
                     HStack {
                         Image(systemName: "magnifyingglass")
                             .foregroundColor(.secondary)
-                        TextField("Search clinics...", text: $searchText)
+                        TextField(localization.localized("search_clinics"), text: $searchText)
+                            .focused($isSearchFocused)
                         if !searchText.isEmpty {
                             Button(action: { searchText = "" }) {
                                 Image(systemName: "xmark.circle.fill")
@@ -56,7 +73,7 @@ struct ClinicFinderView: View {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 8) {
                             FilterChip(
-                                title: "All",
+                                title: localization.localized("all"),
                                 isSelected: selectedFilter == nil,
                                 action: { selectedFilter = nil }
                             )
@@ -73,7 +90,7 @@ struct ClinicFinderView: View {
                             Button(action: { showFilters = true }) {
                                 HStack(spacing: 4) {
                                     Image(systemName: "line.3.horizontal.decrease")
-                                    Text("More")
+                                    Text(localization.localized("more_filters"))
                                 }
                                 .font(.subheadline)
                                 .padding(.horizontal, 12)
@@ -87,10 +104,20 @@ struct ClinicFinderView: View {
                 .padding()
                 .background(Color(.systemBackground))
 
+                // Results count
+                HStack {
+                    Text("\(filteredClinics.count) clinics found")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    Spacer()
+                }
+                .padding(.horizontal)
+                .padding(.bottom, 4)
+
                 // Toggle between list and map
                 Picker("View", selection: $showMap) {
-                    Text("List").tag(false)
-                    Text("Map").tag(true)
+                    Text(localization.localized("list")).tag(false)
+                    Text(localization.localized("map")).tag(true)
                 }
                 .pickerStyle(.segmented)
                 .padding(.horizontal)
@@ -103,7 +130,7 @@ struct ClinicFinderView: View {
                     ClinicListView(clinics: filteredClinics, selectedClinic: $selectedClinic)
                 }
             }
-            .navigationTitle("Find Care")
+            .navigationTitle(localization.localized("find_care"))
             .navigationBarTitleDisplayMode(.large)
             .sheet(item: $selectedClinic) { clinic in
                 ClinicDetailView(clinic: clinic)
@@ -111,6 +138,26 @@ struct ClinicFinderView: View {
             .sheet(isPresented: $showFilters) {
                 FilterSheetView(selectedFilter: $selectedFilter)
             }
+            .onTapGesture {
+                isSearchFocused = false
+            }
+            .onAppear {
+                updateMapRegion()
+            }
+        }
+    }
+
+    private func updateMapRegion() {
+        if let location = locationService.currentLocation {
+            region = MKCoordinateRegion(
+                center: location.coordinate,
+                span: MKCoordinateSpan(latitudeDelta: 0.15, longitudeDelta: 0.15)
+            )
+        } else if let firstClinic = filteredClinics.first {
+            region = MKCoordinateRegion(
+                center: firstClinic.coordinate,
+                span: MKCoordinateSpan(latitudeDelta: 0.15, longitudeDelta: 0.15)
+            )
         }
     }
 
@@ -169,16 +216,30 @@ struct ClinicListView: View {
     @Binding var selectedClinic: Clinic?
 
     var body: some View {
-        ScrollView {
-            LazyVStack(spacing: 12) {
-                ForEach(clinics) { clinic in
-                    ClinicCard(clinic: clinic)
-                        .onTapGesture {
-                            selectedClinic = clinic
-                        }
-                }
+        if clinics.isEmpty {
+            VStack(spacing: 16) {
+                Image(systemName: "building.2")
+                    .font(.system(size: 50))
+                    .foregroundColor(.secondary)
+                Text("No clinics found")
+                    .font(.headline)
+                Text("Try adjusting your filters or search")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
             }
-            .padding()
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        } else {
+            ScrollView {
+                LazyVStack(spacing: 12) {
+                    ForEach(clinics) { clinic in
+                        ClinicCard(clinic: clinic)
+                            .onTapGesture {
+                                selectedClinic = clinic
+                            }
+                    }
+                }
+                .padding()
+            }
         }
     }
 }
@@ -186,6 +247,7 @@ struct ClinicListView: View {
 // MARK: - Clinic Card
 struct ClinicCard: View {
     let clinic: Clinic
+    @StateObject private var localization = LocalizationManager.shared
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -198,6 +260,7 @@ struct ClinicCard: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(clinic.name)
                         .font(.headline)
+                        .lineLimit(2)
                     Text(clinic.type.displayName)
                         .font(.caption)
                         .foregroundColor(.secondary)
@@ -205,14 +268,30 @@ struct ClinicCard: View {
 
                 Spacer()
 
-                if clinic.isOpenNow {
-                    Text("Open")
-                        .font(.caption.weight(.medium))
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(Color.green.opacity(0.2))
-                        .foregroundColor(.green)
-                        .cornerRadius(8)
+                VStack(alignment: .trailing, spacing: 4) {
+                    if clinic.isOpenNow {
+                        Text(localization.localized("open"))
+                            .font(.caption.weight(.medium))
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(Color.green.opacity(0.2))
+                            .foregroundColor(.green)
+                            .cornerRadius(8)
+                    } else {
+                        Text(localization.localized("closed"))
+                            .font(.caption.weight(.medium))
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(Color.red.opacity(0.2))
+                            .foregroundColor(.red)
+                            .cornerRadius(8)
+                    }
+
+                    if let distance = clinic.distance {
+                        Text(String(format: "%.1f mi", distance))
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
                 }
             }
 
@@ -223,27 +302,31 @@ struct ClinicCard: View {
                 Text(clinic.fullAddress)
                     .font(.subheadline)
                     .foregroundColor(.secondary)
+                    .lineLimit(2)
             }
 
             // Services badges
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
                     if clinic.services.freeServices {
-                        ServiceBadge(text: "Free", color: .green)
+                        ServiceBadge(text: localization.localized("free"), color: .green)
                     }
                     if clinic.services.slidingScale {
-                        ServiceBadge(text: "Sliding Scale", color: .blue)
+                        ServiceBadge(text: localization.localized("sliding_scale"), color: .blue)
                     }
                     if clinic.services.interpreterAvailable {
-                        ServiceBadge(text: "Interpreter", color: .purple)
+                        ServiceBadge(text: localization.localized("interpreter"), color: .purple)
                     }
                     if clinic.services.walkInsAccepted {
-                        ServiceBadge(text: "Walk-ins OK", color: .orange)
+                        ServiceBadge(text: localization.localized("walk_ins_ok"), color: .orange)
+                    }
+                    if clinic.services.telehealth {
+                        ServiceBadge(text: "Telehealth", color: .teal)
                     }
                 }
             }
 
-            // Rating and distance
+            // Rating and actions
             HStack {
                 if let rating = clinic.rating {
                     HStack(spacing: 4) {
@@ -263,7 +346,7 @@ struct ClinicCard: View {
                 Button(action: { callClinic(clinic) }) {
                     HStack {
                         Image(systemName: "phone.fill")
-                        Text("Call")
+                        Text(localization.localized("call"))
                     }
                     .font(.subheadline.weight(.medium))
                     .padding(.horizontal, 12)
@@ -338,6 +421,24 @@ struct FilterSheetView: View {
         NavigationView {
             List {
                 Section("Clinic Type") {
+                    Button(action: {
+                        selectedFilter = nil
+                        dismiss()
+                    }) {
+                        HStack {
+                            Image(systemName: "building.2")
+                                .foregroundColor(.blue)
+                                .frame(width: 30)
+                            Text("All Clinics")
+                                .foregroundColor(.primary)
+                            Spacer()
+                            if selectedFilter == nil {
+                                Image(systemName: "checkmark")
+                                    .foregroundColor(.blue)
+                            }
+                        }
+                    }
+
                     ForEach(ClinicType.allCases) { type in
                         Button(action: {
                             selectedFilter = type
@@ -374,6 +475,7 @@ struct FilterSheetView: View {
 struct ClinicDetailView: View {
     let clinic: Clinic
     @Environment(\.dismiss) var dismiss
+    @StateObject private var localization = LocalizationManager.shared
 
     var body: some View {
         NavigationView {
@@ -388,6 +490,17 @@ struct ClinicDetailView: View {
                             Text(clinic.type.displayName)
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)
+
+                            Spacer()
+
+                            if let rating = clinic.rating {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "star.fill")
+                                        .foregroundColor(.yellow)
+                                    Text(String(format: "%.1f", rating))
+                                        .font(.headline)
+                                }
+                            }
                         }
                         Text(clinic.name)
                             .font(.title.bold())
@@ -407,17 +520,35 @@ struct ClinicDetailView: View {
 
                     // Action buttons
                     HStack(spacing: 12) {
-                        ActionButton(title: "Call", icon: "phone.fill", color: .green) {
+                        ActionButton(title: localization.localized("call"), icon: "phone.fill", color: .green) {
                             callClinic()
                         }
-                        ActionButton(title: "Directions", icon: "map.fill", color: .blue) {
+                        ActionButton(title: localization.localized("directions"), icon: "map.fill", color: .blue) {
                             openDirections()
                         }
                     }
 
+                    // Special notes
+                    if let notes = clinic.specialNotes {
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack {
+                                Image(systemName: "info.circle.fill")
+                                    .foregroundColor(.blue)
+                                Text("Important Information")
+                                    .font(.headline)
+                            }
+                            Text(notes)
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        }
+                        .padding()
+                        .background(Color.blue.opacity(0.1))
+                        .cornerRadius(12)
+                    }
+
                     // Description
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("About")
+                        Text(localization.localized("about"))
                             .font(.headline)
                         Text(clinic.description)
                             .foregroundColor(.secondary)
@@ -425,29 +556,51 @@ struct ClinicDetailView: View {
 
                     // Services
                     VStack(alignment: .leading, spacing: 12) {
-                        Text("Services")
+                        Text(localization.localized("services"))
                             .font(.headline)
 
                         ServicesGrid(services: clinic.services)
                     }
 
+                    // Languages
+                    if !clinic.services.languages.isEmpty {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Languages Available")
+                                .font(.headline)
+
+                            FlowLayout(spacing: 8) {
+                                ForEach(clinic.services.languages) { language in
+                                    Text(language.displayName)
+                                        .font(.caption)
+                                        .padding(.horizontal, 10)
+                                        .padding(.vertical, 6)
+                                        .background(Color.purple.opacity(0.2))
+                                        .foregroundColor(.purple)
+                                        .cornerRadius(12)
+                                }
+                            }
+                        }
+                    }
+
                     // Hours
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Hours")
+                        Text(localization.localized("hours"))
                             .font(.headline)
 
                         ForEach(clinic.hours, id: \.dayOfWeek) { hours in
                             HStack {
                                 Text(hours.dayName)
                                     .frame(width: 100, alignment: .leading)
+                                    .font(.subheadline)
                                 if hours.isClosed {
                                     Text("Closed")
-                                        .foregroundColor(.secondary)
+                                        .foregroundColor(.red)
+                                        .font(.subheadline)
                                 } else {
                                     Text("\(hours.openTime) - \(hours.closeTime)")
+                                        .font(.subheadline)
                                 }
                             }
-                            .font(.subheadline)
                         }
                     }
                     .padding()
@@ -458,7 +611,7 @@ struct ClinicDetailView: View {
                     NavigationLink(destination: BookAppointmentView(clinic: clinic)) {
                         HStack {
                             Image(systemName: "calendar.badge.plus")
-                            Text("Book Appointment")
+                            Text(localization.localized("book_appointment"))
                         }
                         .frame(maxWidth: .infinity)
                         .padding()
@@ -472,7 +625,7 @@ struct ClinicDetailView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") { dismiss() }
+                    Button(localization.localized("done")) { dismiss() }
                 }
             }
         }
@@ -489,6 +642,49 @@ struct ClinicDetailView: View {
         let mapItem = MKMapItem(placemark: MKPlacemark(coordinate: clinic.coordinate))
         mapItem.name = clinic.name
         mapItem.openInMaps(launchOptions: [MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeDriving])
+    }
+}
+
+// MARK: - Flow Layout for Languages
+struct FlowLayout: Layout {
+    var spacing: CGFloat = 8
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let sizes = subviews.map { $0.sizeThatFits(.unspecified) }
+        return layout(sizes: sizes, proposal: proposal).size
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        let sizes = subviews.map { $0.sizeThatFits(.unspecified) }
+        let positions = layout(sizes: sizes, proposal: proposal).positions
+
+        for (index, subview) in subviews.enumerated() {
+            subview.place(at: CGPoint(x: bounds.minX + positions[index].x, y: bounds.minY + positions[index].y), proposal: .unspecified)
+        }
+    }
+
+    private func layout(sizes: [CGSize], proposal: ProposedViewSize) -> (size: CGSize, positions: [CGPoint]) {
+        var positions: [CGPoint] = []
+        var x: CGFloat = 0
+        var y: CGFloat = 0
+        var maxHeight: CGFloat = 0
+        var totalHeight: CGFloat = 0
+        let maxWidth = proposal.width ?? .infinity
+
+        for size in sizes {
+            if x + size.width > maxWidth && x > 0 {
+                x = 0
+                y += maxHeight + spacing
+                maxHeight = 0
+            }
+
+            positions.append(CGPoint(x: x, y: y))
+            x += size.width + spacing
+            maxHeight = max(maxHeight, size.height)
+            totalHeight = y + maxHeight
+        }
+
+        return (CGSize(width: maxWidth, height: totalHeight), positions)
     }
 }
 
@@ -553,17 +749,29 @@ struct ServicesGrid: View {
             if services.telehealth {
                 ServiceItem(icon: "video", text: "Telehealth", available: true)
             }
+            if services.transportationHelp {
+                ServiceItem(icon: "car", text: "Transportation Help", available: true)
+            }
             if services.mentalHealth {
                 ServiceItem(icon: "brain.head.profile", text: "Mental Health", available: true)
             }
             if services.dental {
                 ServiceItem(icon: "mouth", text: "Dental", available: true)
             }
+            if services.vision {
+                ServiceItem(icon: "eye", text: "Vision", available: true)
+            }
             if services.prenatal {
                 ServiceItem(icon: "figure.and.child.holdinghands", text: "Prenatal Care", available: true)
             }
+            if services.pediatric {
+                ServiceItem(icon: "figure.2.and.child.holdinghands", text: "Pediatric", available: true)
+            }
             if services.vaccinations {
                 ServiceItem(icon: "syringe", text: "Vaccinations", available: true)
+            }
+            if services.emergencyMedicaid {
+                ServiceItem(icon: "cross.case", text: "Emergency Medicaid", available: true)
             }
         }
     }
