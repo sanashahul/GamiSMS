@@ -2,6 +2,7 @@ import SwiftUI
 
 struct AppointmentsView: View {
     @EnvironmentObject var appointmentsManager: AppointmentsManager
+    @StateObject private var localization = LocalizationManager.shared
     @State private var showBooking = false
     @State private var selectedSegment = 0
 
@@ -10,8 +11,8 @@ struct AppointmentsView: View {
             VStack(spacing: 0) {
                 // Segment picker
                 Picker("Appointments", selection: $selectedSegment) {
-                    Text("Upcoming").tag(0)
-                    Text("Past").tag(1)
+                    Text(localization.localized("upcoming")).tag(0)
+                    Text(localization.localized("past")).tag(1)
                 }
                 .pickerStyle(.segmented)
                 .padding()
@@ -27,7 +28,7 @@ struct AppointmentsView: View {
                     )
                 }
             }
-            .navigationTitle("Appointments")
+            .navigationTitle(localization.localized("appointments"))
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: { showBooking = true }) {
@@ -92,6 +93,7 @@ struct AppointmentDetailRow: View {
     let appointment: Appointment
     let onCancel: (Appointment) -> Void
     @State private var showCancelAlert = false
+    @StateObject private var localization = LocalizationManager.shared
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -99,11 +101,11 @@ struct AppointmentDetailRow: View {
             HStack {
                 VStack(alignment: .leading) {
                     if appointment.isToday {
-                        Text("TODAY")
+                        Text(localization.localized("today"))
                             .font(.caption.weight(.bold))
                             .foregroundColor(.red)
                     } else if appointment.isTomorrow {
-                        Text("TOMORROW")
+                        Text(localization.localized("tomorrow"))
                             .font(.caption.weight(.bold))
                             .foregroundColor(.orange)
                     } else {
@@ -143,7 +145,7 @@ struct AppointmentDetailRow: View {
             if appointment.needsInterpreter || appointment.needsTransportation {
                 HStack(spacing: 12) {
                     if appointment.needsInterpreter {
-                        NeedBadge(icon: "bubble.left.and.bubble.right", text: "Interpreter", color: .purple)
+                        NeedBadge(icon: "bubble.left.and.bubble.right", text: localization.localized("interpreter"), color: .purple)
                     }
                     if appointment.needsTransportation {
                         NeedBadge(icon: "car", text: "Transport", color: .orange)
@@ -156,7 +158,7 @@ struct AppointmentDetailRow: View {
                 Button(action: { callClinic() }) {
                     HStack {
                         Image(systemName: "phone.fill")
-                        Text("Call Clinic")
+                        Text(localization.localized("call_clinic"))
                     }
                     .font(.subheadline.weight(.medium))
                     .frame(maxWidth: .infinity)
@@ -169,7 +171,7 @@ struct AppointmentDetailRow: View {
                 Button(action: { showCancelAlert = true }) {
                     HStack {
                         Image(systemName: "xmark")
-                        Text("Cancel")
+                        Text(localization.localized("cancel"))
                     }
                     .font(.subheadline.weight(.medium))
                     .frame(maxWidth: .infinity)
@@ -184,9 +186,9 @@ struct AppointmentDetailRow: View {
         .background(Color(.systemBackground))
         .cornerRadius(16)
         .shadow(color: .black.opacity(0.05), radius: 5)
-        .alert("Cancel Appointment?", isPresented: $showCancelAlert) {
-            Button("Keep Appointment", role: .cancel) {}
-            Button("Cancel Appointment", role: .destructive) {
+        .alert(localization.localized("cancel_appointment"), isPresented: $showCancelAlert) {
+            Button(localization.localized("keep_appointment"), role: .cancel) {}
+            Button(localization.localized("cancel"), role: .destructive) {
                 onCancel(appointment)
             }
         } message: {
@@ -267,6 +269,8 @@ struct PastAppointmentRow: View {
 
 // MARK: - Empty State
 struct EmptyAppointmentsView: View {
+    @StateObject private var localization = LocalizationManager.shared
+
     var body: some View {
         VStack(spacing: 20) {
             Image(systemName: "calendar.badge.plus")
@@ -274,9 +278,9 @@ struct EmptyAppointmentsView: View {
                 .foregroundColor(.blue.opacity(0.5))
 
             VStack(spacing: 8) {
-                Text("No Upcoming Appointments")
+                Text(localization.localized("no_upcoming_appointments"))
                     .font(.headline)
-                Text("Schedule your first appointment to get started with your healthcare journey.")
+                Text(localization.localized("schedule_first_appointment"))
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
@@ -290,11 +294,13 @@ struct EmptyAppointmentsView: View {
 // MARK: - Select Clinic for Booking
 struct SelectClinicForBookingView: View {
     @Environment(\.dismiss) var dismiss
+    @StateObject private var clinicService = ClinicService.shared
+    @StateObject private var localization = LocalizationManager.shared
 
     var body: some View {
         NavigationView {
             List {
-                ForEach(Clinic.samples) { clinic in
+                ForEach(clinicService.allClinics) { clinic in
                     NavigationLink(destination: BookAppointmentView(clinic: clinic)) {
                         HStack(spacing: 12) {
                             Image(systemName: clinic.type.icon)
@@ -304,7 +310,7 @@ struct SelectClinicForBookingView: View {
                             VStack(alignment: .leading) {
                                 Text(clinic.name)
                                     .font(.subheadline.weight(.medium))
-                                Text(clinic.type.displayName)
+                                Text("\(clinic.city), \(clinic.state)")
                                     .font(.caption)
                                     .foregroundColor(.secondary)
                             }
@@ -312,11 +318,11 @@ struct SelectClinicForBookingView: View {
                     }
                 }
             }
-            .navigationTitle("Select Clinic")
+            .navigationTitle(localization.localized("select_clinic"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") { dismiss() }
+                    Button(localization.localized("cancel")) { dismiss() }
                 }
             }
         }
@@ -329,6 +335,7 @@ struct BookAppointmentView: View {
     @EnvironmentObject var userProfile: UserProfile
     @EnvironmentObject var appointmentsManager: AppointmentsManager
     @Environment(\.dismiss) var dismiss
+    @StateObject private var localization = LocalizationManager.shared
 
     @State private var selectedType: AppointmentType = .newPatient
     @State private var selectedDate = Date()
@@ -336,6 +343,8 @@ struct BookAppointmentView: View {
     @State private var needsInterpreter = false
     @State private var needsTransportation = false
     @State private var notes = ""
+    @State private var showConfirmation = false
+    @State private var isBooking = false
 
     let timeSlots = [
         "9:00 AM", "9:30 AM", "10:00 AM", "10:30 AM", "11:00 AM", "11:30 AM",
@@ -360,7 +369,7 @@ struct BookAppointmentView: View {
             }
 
             // Appointment type
-            Section("Type of Visit") {
+            Section(localization.localized("type_of_visit")) {
                 Picker("Visit Type", selection: $selectedType) {
                     ForEach(AppointmentType.allCases) { type in
                         HStack {
@@ -374,10 +383,10 @@ struct BookAppointmentView: View {
             }
 
             // Date and time
-            Section("When") {
-                DatePicker("Date", selection: $selectedDate, in: Date()..., displayedComponents: .date)
+            Section(localization.localized("when")) {
+                DatePicker(localization.localized("date"), selection: $selectedDate, in: Date()..., displayedComponents: .date)
 
-                Picker("Time", selection: $selectedTime) {
+                Picker(localization.localized("time"), selection: $selectedTime) {
                     ForEach(timeSlots, id: \.self) { time in
                         Text(time).tag(time)
                     }
@@ -386,12 +395,12 @@ struct BookAppointmentView: View {
             }
 
             // Special needs
-            Section("Special Needs") {
+            Section(localization.localized("special_needs")) {
                 Toggle(isOn: $needsInterpreter) {
                     HStack {
                         Image(systemName: "bubble.left.and.bubble.right")
                             .foregroundColor(.purple)
-                        Text("I need an interpreter")
+                        Text(localization.localized("need_interpreter_toggle"))
                     }
                 }
 
@@ -408,13 +417,13 @@ struct BookAppointmentView: View {
                     HStack {
                         Image(systemName: "car")
                             .foregroundColor(.orange)
-                        Text("I need help with transportation")
+                        Text(localization.localized("need_transportation"))
                     }
                 }
             }
 
             // Notes
-            Section("Notes (Optional)") {
+            Section(localization.localized("notes_optional")) {
                 TextEditor(text: $notes)
                     .frame(height: 100)
             }
@@ -424,40 +433,194 @@ struct BookAppointmentView: View {
                 Button(action: bookAppointment) {
                     HStack {
                         Spacer()
-                        Text("Book Appointment")
-                            .fontWeight(.semibold)
+                        if isBooking {
+                            ProgressView()
+                                .tint(.white)
+                        } else {
+                            Text(localization.localized("book_appointment"))
+                                .fontWeight(.semibold)
+                        }
                         Spacer()
                     }
                 }
+                .disabled(isBooking)
                 .foregroundColor(.white)
                 .listRowBackground(Color.blue)
             }
         }
-        .navigationTitle("Book Appointment")
+        .navigationTitle(localization.localized("book_appointment"))
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             needsInterpreter = userProfile.needsInterpreter
             needsTransportation = !userProfile.hasTransportation
         }
+        .sheet(isPresented: $showConfirmation) {
+            AppointmentConfirmationView(
+                clinic: clinic,
+                date: selectedDate,
+                time: selectedTime,
+                appointmentType: selectedType,
+                needsInterpreter: needsInterpreter,
+                needsTransportation: needsTransportation,
+                onDone: {
+                    showConfirmation = false
+                    dismiss()
+                }
+            )
+        }
     }
 
     private func bookAppointment() {
-        let appointment = Appointment(
-            clinicId: clinic.id,
-            clinicName: clinic.name,
-            clinicAddress: clinic.fullAddress,
-            clinicPhone: clinic.phoneNumber,
-            appointmentType: selectedType,
-            date: selectedDate,
-            time: selectedTime,
-            needsInterpreter: needsInterpreter,
-            interpreterLanguage: needsInterpreter ? userProfile.preferredLanguage : nil,
-            needsTransportation: needsTransportation,
-            notes: notes
-        )
+        isBooking = true
 
-        appointmentsManager.add(appointment)
-        dismiss()
+        // Simulate network delay for realistic feel
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+            let appointment = Appointment(
+                clinicId: clinic.id,
+                clinicName: clinic.name,
+                clinicAddress: clinic.fullAddress,
+                clinicPhone: clinic.phoneNumber,
+                appointmentType: selectedType,
+                date: selectedDate,
+                time: selectedTime,
+                needsInterpreter: needsInterpreter,
+                interpreterLanguage: needsInterpreter ? userProfile.preferredLanguage : nil,
+                needsTransportation: needsTransportation,
+                notes: notes
+            )
+
+            appointmentsManager.add(appointment)
+            isBooking = false
+            showConfirmation = true
+        }
+    }
+}
+
+// MARK: - Appointment Confirmation View
+struct AppointmentConfirmationView: View {
+    let clinic: Clinic
+    let date: Date
+    let time: String
+    let appointmentType: AppointmentType
+    let needsInterpreter: Bool
+    let needsTransportation: Bool
+    let onDone: () -> Void
+    @StateObject private var localization = LocalizationManager.shared
+
+    var body: some View {
+        VStack(spacing: 24) {
+            Spacer()
+
+            // Success animation
+            ZStack {
+                Circle()
+                    .fill(Color.green.opacity(0.2))
+                    .frame(width: 120, height: 120)
+
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.system(size: 80))
+                    .foregroundColor(.green)
+            }
+
+            VStack(spacing: 8) {
+                Text(localization.localized("appointment_booked"))
+                    .font(.title.bold())
+
+                Text(localization.localized("appointment_confirmed"))
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+            }
+
+            // Appointment details card
+            VStack(alignment: .leading, spacing: 16) {
+                // Clinic
+                HStack(spacing: 12) {
+                    Image(systemName: clinic.type.icon)
+                        .foregroundColor(Color(clinic.type.color))
+                        .frame(width: 40)
+                    VStack(alignment: .leading) {
+                        Text(clinic.name)
+                            .font(.headline)
+                        Text(clinic.fullAddress)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                }
+
+                Divider()
+
+                // Date & Time
+                HStack(spacing: 12) {
+                    Image(systemName: "calendar")
+                        .foregroundColor(.blue)
+                        .frame(width: 40)
+                    VStack(alignment: .leading) {
+                        Text(formattedDate)
+                            .font(.headline)
+                        Text(time)
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
+                }
+
+                Divider()
+
+                // Type
+                HStack(spacing: 12) {
+                    Image(systemName: appointmentType.icon)
+                        .foregroundColor(.teal)
+                        .frame(width: 40)
+                    Text(appointmentType.displayName)
+                        .font(.headline)
+                }
+
+                // Special needs
+                if needsInterpreter || needsTransportation {
+                    Divider()
+                    HStack(spacing: 12) {
+                        Image(systemName: "star.fill")
+                            .foregroundColor(.purple)
+                            .frame(width: 40)
+                        VStack(alignment: .leading) {
+                            if needsInterpreter {
+                                Text("Interpreter requested")
+                                    .font(.subheadline)
+                            }
+                            if needsTransportation {
+                                Text("Transportation assistance requested")
+                                    .font(.subheadline)
+                            }
+                        }
+                    }
+                }
+            }
+            .padding()
+            .background(Color(.systemGray6))
+            .cornerRadius(16)
+            .padding(.horizontal)
+
+            Spacer()
+
+            // Done button
+            Button(action: onDone) {
+                Text(localization.localized("done"))
+                    .fontWeight(.semibold)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.blue)
+                    .foregroundColor(.white)
+                    .cornerRadius(12)
+            }
+            .padding(.horizontal)
+            .padding(.bottom, 30)
+        }
+    }
+
+    var formattedDate: String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .full
+        return formatter.string(from: date)
     }
 }
 

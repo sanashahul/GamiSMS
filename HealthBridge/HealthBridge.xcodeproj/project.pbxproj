@@ -26,6 +26,9 @@
 		F1000017 /* ClinicFinderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2000017; };
 		F1000018 /* AppointmentsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2000018; };
 		F1000019 /* LearnView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2000019; };
+		F1000020 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F2000021; };
+		F1000021 /* LocalizationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2000022; };
+		F1000022 /* LocationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2000023; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -49,6 +52,9 @@
 		F2000018 /* AppointmentsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppointmentsView.swift; sourceTree = "<group>"; };
 		F2000019 /* LearnView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LearnView.swift; sourceTree = "<group>"; };
 		F2000020 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		F2000021 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		F2000022 /* LocalizationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizationManager.swift; sourceTree = "<group>"; };
+		F2000023 /* LocationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationService.swift; sourceTree = "<group>"; };
 		F3000001 /* HealthBridge.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HealthBridge.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -61,6 +67,17 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXResourcesBuildPhase section */
+		F4000002 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F1000020 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXGroup section */
 		F5000001 = {
@@ -78,9 +95,20 @@
 				F2000002 /* ContentView.swift */,
 				F5000003 /* Models */,
 				F5000004 /* Views */,
+				F5000011 /* Services */,
+				F2000021 /* Assets.xcassets */,
 				F2000020 /* Info.plist */,
 			);
 			path = HealthBridge;
+			sourceTree = "<group>";
+		};
+		F5000011 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				F2000022 /* LocalizationManager.swift */,
+				F2000023 /* LocationService.swift */,
+			);
+			path = Services;
 			sourceTree = "<group>";
 		};
 		F5000003 /* Models */ = {
@@ -171,6 +199,7 @@
 			buildPhases = (
 				F7000001 /* Sources */,
 				F4000001 /* Frameworks */,
+				F4000002 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -245,6 +274,8 @@
 				F1000017 /* ClinicFinderView.swift in Sources */,
 				F1000018 /* AppointmentsView.swift in Sources */,
 				F1000019 /* LearnView.swift in Sources */,
+				F1000021 /* LocalizationManager.swift in Sources */,
+				F1000022 /* LocationService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
