@@ -3,12 +3,26 @@ import SwiftUI
 struct AppointmentsView: View {
     @EnvironmentObject var appointmentsManager: AppointmentsManager
     @StateObject private var localization = LocalizationManager.shared
-    @State private var showBooking = false
+    @State private var showAddAppointment = false
     @State private var selectedSegment = 0
 
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
+                // Info banner - emphasize this is a tracker, not booking
+                HStack(spacing: 12) {
+                    Image(systemName: "info.circle.fill")
+                        .foregroundColor(.blue)
+                    Text(localization.localized("appointment_tracker_info"))
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                .padding()
+                .background(Color.blue.opacity(0.1))
+                .cornerRadius(12)
+                .padding(.horizontal)
+                .padding(.top, 8)
+
                 // Segment picker
                 Picker("Appointments", selection: $selectedSegment) {
                     Text(localization.localized("upcoming")).tag(0)
@@ -20,7 +34,7 @@ struct AppointmentsView: View {
                 if selectedSegment == 0 {
                     UpcomingAppointmentsList(
                         appointments: appointmentsManager.upcomingAppointments,
-                        onCancel: { appointmentsManager.cancel($0) }
+                        onDelete: { appointmentsManager.cancel($0) }
                     )
                 } else {
                     PastAppointmentsList(
@@ -28,16 +42,16 @@ struct AppointmentsView: View {
                     )
                 }
             }
-            .navigationTitle(localization.localized("appointments"))
+            .navigationTitle(localization.localized("my_appointments"))
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: { showBooking = true }) {
+                    Button(action: { showAddAppointment = true }) {
                         Image(systemName: "plus")
                     }
                 }
             }
-            .sheet(isPresented: $showBooking) {
-                SelectClinicForBookingView()
+            .sheet(isPresented: $showAddAppointment) {
+                AddAppointmentReminderView()
             }
         }
     }
@@ -46,7 +60,8 @@ struct AppointmentsView: View {
 // MARK: - Upcoming Appointments List
 struct UpcomingAppointmentsList: View {
     let appointments: [Appointment]
-    let onCancel: (Appointment) -> Void
+    let onDelete: (Appointment) -> Void
+    @StateObject private var localization = LocalizationManager.shared
 
     var body: some View {
         if appointments.isEmpty {
@@ -54,7 +69,7 @@ struct UpcomingAppointmentsList: View {
         } else {
             List {
                 ForEach(appointments) { appointment in
-                    AppointmentDetailRow(appointment: appointment, onCancel: onCancel)
+                    AppointmentReminderRow(appointment: appointment, onDelete: onDelete)
                 }
             }
             .listStyle(.plain)
@@ -65,6 +80,7 @@ struct UpcomingAppointmentsList: View {
 // MARK: - Past Appointments List
 struct PastAppointmentsList: View {
     let appointments: [Appointment]
+    @StateObject private var localization = LocalizationManager.shared
 
     var body: some View {
         if appointments.isEmpty {
@@ -72,7 +88,7 @@ struct PastAppointmentsList: View {
                 Image(systemName: "clock.arrow.circlepath")
                     .font(.system(size: 50))
                     .foregroundColor(.secondary)
-                Text("No past appointments")
+                Text(localization.localized("no_past_appointments"))
                     .font(.headline)
                     .foregroundColor(.secondary)
             }
@@ -88,11 +104,12 @@ struct PastAppointmentsList: View {
     }
 }
 
-// MARK: - Appointment Detail Row
-struct AppointmentDetailRow: View {
+// MARK: - Appointment Reminder Row
+struct AppointmentReminderRow: View {
     let appointment: Appointment
-    let onCancel: (Appointment) -> Void
-    @State private var showCancelAlert = false
+    let onDelete: (Appointment) -> Void
+    @State private var showDeleteAlert = false
+    @State private var showEditSheet = false
     @StateObject private var localization = LocalizationManager.shared
 
     var body: some View {
@@ -117,7 +134,19 @@ struct AppointmentDetailRow: View {
                         .font(.title2.bold())
                 }
                 Spacer()
-                StatusBadge(status: appointment.status)
+
+                // Reminder badge
+                HStack(spacing: 4) {
+                    Image(systemName: "bell.fill")
+                        .font(.caption)
+                    Text(localization.localized("reminder"))
+                        .font(.caption.weight(.medium))
+                }
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(Color.blue.opacity(0.2))
+                .foregroundColor(.blue)
+                .cornerRadius(8)
             }
 
             Divider()
@@ -135,9 +164,11 @@ struct AppointmentDetailRow: View {
                     Text(appointment.clinicName)
                         .font(.subheadline)
                         .foregroundColor(.secondary)
-                    Text(appointment.clinicAddress)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                    if !appointment.clinicAddress.isEmpty {
+                        Text(appointment.clinicAddress)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
                 }
             }
 
@@ -148,30 +179,45 @@ struct AppointmentDetailRow: View {
                         NeedBadge(icon: "bubble.left.and.bubble.right", text: localization.localized("interpreter"), color: .purple)
                     }
                     if appointment.needsTransportation {
-                        NeedBadge(icon: "car", text: "Transport", color: .orange)
+                        NeedBadge(icon: "car", text: localization.localized("transport"), color: .orange)
                     }
                 }
             }
 
+            // Notes
+            if !appointment.notes.isEmpty {
+                HStack(alignment: .top, spacing: 8) {
+                    Image(systemName: "note.text")
+                        .foregroundColor(.secondary)
+                        .font(.caption)
+                    Text(appointment.notes)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                .padding(.top, 4)
+            }
+
             // Actions
             HStack(spacing: 12) {
-                Button(action: { callClinic() }) {
-                    HStack {
-                        Image(systemName: "phone.fill")
-                        Text(localization.localized("call_clinic"))
+                if !appointment.clinicPhone.isEmpty {
+                    Button(action: { callClinic() }) {
+                        HStack {
+                            Image(systemName: "phone.fill")
+                            Text(localization.localized("call_clinic"))
+                        }
+                        .font(.subheadline.weight(.medium))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 10)
+                        .background(Color.blue)
+                        .foregroundColor(.white)
+                        .cornerRadius(8)
                     }
-                    .font(.subheadline.weight(.medium))
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 10)
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(8)
                 }
 
-                Button(action: { showCancelAlert = true }) {
+                Button(action: { showDeleteAlert = true }) {
                     HStack {
-                        Image(systemName: "xmark")
-                        Text(localization.localized("cancel"))
+                        Image(systemName: "trash")
+                        Text(localization.localized("delete"))
                     }
                     .font(.subheadline.weight(.medium))
                     .frame(maxWidth: .infinity)
@@ -186,13 +232,13 @@ struct AppointmentDetailRow: View {
         .background(Color(.systemBackground))
         .cornerRadius(16)
         .shadow(color: .black.opacity(0.05), radius: 5)
-        .alert(localization.localized("cancel_appointment"), isPresented: $showCancelAlert) {
-            Button(localization.localized("keep_appointment"), role: .cancel) {}
-            Button(localization.localized("cancel"), role: .destructive) {
-                onCancel(appointment)
+        .alert(localization.localized("delete_reminder"), isPresented: $showDeleteAlert) {
+            Button(localization.localized("keep"), role: .cancel) {}
+            Button(localization.localized("delete"), role: .destructive) {
+                onDelete(appointment)
             }
         } message: {
-            Text("Are you sure you want to cancel this appointment?")
+            Text(localization.localized("delete_reminder_confirm"))
         }
     }
 
@@ -201,20 +247,6 @@ struct AppointmentDetailRow: View {
         if let url = URL(string: "tel://\(number)") {
             UIApplication.shared.open(url)
         }
-    }
-}
-
-struct StatusBadge: View {
-    let status: AppointmentStatus
-
-    var body: some View {
-        Text(status.displayName)
-            .font(.caption.weight(.medium))
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .background(Color(status.color).opacity(0.2))
-            .foregroundColor(Color(status.color))
-            .cornerRadius(8)
     }
 }
 
@@ -240,6 +272,7 @@ struct NeedBadge: View {
 // MARK: - Past Appointment Row
 struct PastAppointmentRow: View {
     let appointment: Appointment
+    @StateObject private var localization = LocalizationManager.shared
 
     var body: some View {
         HStack(spacing: 12) {
@@ -260,7 +293,13 @@ struct PastAppointmentRow: View {
                 Text(appointment.formattedDate)
                     .font(.caption)
                     .foregroundColor(.secondary)
-                StatusBadge(status: appointment.status)
+                Text(localization.localized("completed"))
+                    .font(.caption.weight(.medium))
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 2)
+                    .background(Color.green.opacity(0.2))
+                    .foregroundColor(.green)
+                    .cornerRadius(4)
             }
         }
         .padding(.vertical, 4)
@@ -273,354 +312,227 @@ struct EmptyAppointmentsView: View {
 
     var body: some View {
         VStack(spacing: 20) {
-            Image(systemName: "calendar.badge.plus")
+            Image(systemName: "calendar.badge.clock")
                 .font(.system(size: 60))
                 .foregroundColor(.blue.opacity(0.5))
 
             VStack(spacing: 8) {
-                Text(localization.localized("no_upcoming_appointments"))
+                Text(localization.localized("no_upcoming_reminders"))
                     .font(.headline)
-                Text(localization.localized("schedule_first_appointment"))
+                Text(localization.localized("add_appointment_after_calling"))
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal)
             }
+
+            // Helpful tip
+            VStack(spacing: 12) {
+                HStack(spacing: 8) {
+                    Image(systemName: "lightbulb.fill")
+                        .foregroundColor(.yellow)
+                    Text(localization.localized("how_to_use"))
+                        .font(.subheadline.weight(.medium))
+                }
+
+                VStack(alignment: .leading, spacing: 8) {
+                    HowToStep(number: "1", text: localization.localized("step_find_clinic"))
+                    HowToStep(number: "2", text: localization.localized("step_call_clinic"))
+                    HowToStep(number: "3", text: localization.localized("step_add_reminder"))
+                }
+            }
+            .padding()
+            .background(Color.blue.opacity(0.1))
+            .cornerRadius(12)
+            .padding(.horizontal)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 
-// MARK: - Select Clinic for Booking
-struct SelectClinicForBookingView: View {
-    @Environment(\.dismiss) var dismiss
-    @StateObject private var clinicService = ClinicService.shared
-    @StateObject private var localization = LocalizationManager.shared
+struct HowToStep: View {
+    let number: String
+    let text: String
 
     var body: some View {
-        NavigationView {
-            List {
-                ForEach(clinicService.allClinics) { clinic in
-                    NavigationLink(destination: BookAppointmentView(clinic: clinic)) {
-                        HStack(spacing: 12) {
-                            Image(systemName: clinic.type.icon)
-                                .foregroundColor(Color(clinic.type.color))
-                                .frame(width: 30)
-
-                            VStack(alignment: .leading) {
-                                Text(clinic.name)
-                                    .font(.subheadline.weight(.medium))
-                                Text("\(clinic.city), \(clinic.state)")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
-                        }
-                    }
-                }
-            }
-            .navigationTitle(localization.localized("select_clinic"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button(localization.localized("cancel")) { dismiss() }
-                }
-            }
+        HStack(spacing: 12) {
+            Text(number)
+                .font(.caption.weight(.bold))
+                .foregroundColor(.white)
+                .frame(width: 20, height: 20)
+                .background(Color.blue)
+                .clipShape(Circle())
+            Text(text)
+                .font(.caption)
+                .foregroundColor(.secondary)
         }
     }
 }
 
-// MARK: - Book Appointment View
-struct BookAppointmentView: View {
-    let clinic: Clinic
+// MARK: - Add Appointment Reminder View
+struct AddAppointmentReminderView: View {
     @EnvironmentObject var userProfile: UserProfile
     @EnvironmentObject var appointmentsManager: AppointmentsManager
     @Environment(\.dismiss) var dismiss
     @StateObject private var localization = LocalizationManager.shared
 
-    @State private var selectedType: AppointmentType = .newPatient
+    @State private var clinicName = ""
+    @State private var clinicAddress = ""
+    @State private var clinicPhone = ""
+    @State private var selectedType: AppointmentType = .general
     @State private var selectedDate = Date()
     @State private var selectedTime = "9:00 AM"
     @State private var needsInterpreter = false
     @State private var needsTransportation = false
     @State private var notes = ""
-    @State private var showConfirmation = false
-    @State private var isBooking = false
+    @FocusState private var focusedField: Field?
+
+    enum Field {
+        case clinicName, address, phone, notes
+    }
 
     let timeSlots = [
-        "9:00 AM", "9:30 AM", "10:00 AM", "10:30 AM", "11:00 AM", "11:30 AM",
-        "1:00 PM", "1:30 PM", "2:00 PM", "2:30 PM", "3:00 PM", "3:30 PM", "4:00 PM"
+        "8:00 AM", "8:30 AM", "9:00 AM", "9:30 AM", "10:00 AM", "10:30 AM", "11:00 AM", "11:30 AM",
+        "12:00 PM", "12:30 PM", "1:00 PM", "1:30 PM", "2:00 PM", "2:30 PM", "3:00 PM", "3:30 PM",
+        "4:00 PM", "4:30 PM", "5:00 PM"
     ]
 
     var body: some View {
-        Form {
-            // Clinic info
-            Section {
-                HStack(spacing: 12) {
-                    Image(systemName: clinic.type.icon)
-                        .foregroundColor(Color(clinic.type.color))
-                    VStack(alignment: .leading) {
-                        Text(clinic.name)
-                            .font(.headline)
-                        Text(clinic.fullAddress)
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                }
-            }
-
-            // Appointment type
-            Section(localization.localized("type_of_visit")) {
-                Picker("Visit Type", selection: $selectedType) {
-                    ForEach(AppointmentType.allCases) { type in
-                        HStack {
-                            Image(systemName: type.icon)
-                            Text(type.displayName)
-                        }
-                        .tag(type)
-                    }
-                }
-                .pickerStyle(.navigationLink)
-            }
-
-            // Date and time
-            Section(localization.localized("when")) {
-                DatePicker(localization.localized("date"), selection: $selectedDate, in: Date()..., displayedComponents: .date)
-
-                Picker(localization.localized("time"), selection: $selectedTime) {
-                    ForEach(timeSlots, id: \.self) { time in
-                        Text(time).tag(time)
-                    }
-                }
-                .pickerStyle(.navigationLink)
-            }
-
-            // Special needs
-            Section(localization.localized("special_needs")) {
-                Toggle(isOn: $needsInterpreter) {
-                    HStack {
-                        Image(systemName: "bubble.left.and.bubble.right")
-                            .foregroundColor(.purple)
-                        Text(localization.localized("need_interpreter_toggle"))
-                    }
-                }
-
-                if needsInterpreter {
-                    HStack {
-                        Text("Language")
-                        Spacer()
-                        Text(userProfile.preferredLanguage.displayName)
-                            .foregroundColor(.secondary)
-                    }
-                }
-
-                Toggle(isOn: $needsTransportation) {
-                    HStack {
-                        Image(systemName: "car")
-                            .foregroundColor(.orange)
-                        Text(localization.localized("need_transportation"))
-                    }
-                }
-            }
-
-            // Notes
-            Section(localization.localized("notes_optional")) {
-                TextEditor(text: $notes)
-                    .frame(height: 100)
-            }
-
-            // Book button
-            Section {
-                Button(action: bookAppointment) {
-                    HStack {
-                        Spacer()
-                        if isBooking {
-                            ProgressView()
-                                .tint(.white)
-                        } else {
-                            Text(localization.localized("book_appointment"))
-                                .fontWeight(.semibold)
-                        }
-                        Spacer()
-                    }
-                }
-                .disabled(isBooking)
-                .foregroundColor(.white)
-                .listRowBackground(Color.blue)
-            }
-        }
-        .navigationTitle(localization.localized("book_appointment"))
-        .navigationBarTitleDisplayMode(.inline)
-        .onAppear {
-            needsInterpreter = userProfile.needsInterpreter
-            needsTransportation = !userProfile.hasTransportation
-        }
-        .sheet(isPresented: $showConfirmation) {
-            AppointmentConfirmationView(
-                clinic: clinic,
-                date: selectedDate,
-                time: selectedTime,
-                appointmentType: selectedType,
-                needsInterpreter: needsInterpreter,
-                needsTransportation: needsTransportation,
-                onDone: {
-                    showConfirmation = false
-                    dismiss()
-                }
-            )
-        }
-    }
-
-    private func bookAppointment() {
-        isBooking = true
-
-        // Simulate network delay for realistic feel
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-            let appointment = Appointment(
-                clinicId: clinic.id,
-                clinicName: clinic.name,
-                clinicAddress: clinic.fullAddress,
-                clinicPhone: clinic.phoneNumber,
-                appointmentType: selectedType,
-                date: selectedDate,
-                time: selectedTime,
-                needsInterpreter: needsInterpreter,
-                interpreterLanguage: needsInterpreter ? userProfile.preferredLanguage : nil,
-                needsTransportation: needsTransportation,
-                notes: notes
-            )
-
-            appointmentsManager.add(appointment)
-            isBooking = false
-            showConfirmation = true
-        }
-    }
-}
-
-// MARK: - Appointment Confirmation View
-struct AppointmentConfirmationView: View {
-    let clinic: Clinic
-    let date: Date
-    let time: String
-    let appointmentType: AppointmentType
-    let needsInterpreter: Bool
-    let needsTransportation: Bool
-    let onDone: () -> Void
-    @StateObject private var localization = LocalizationManager.shared
-
-    var body: some View {
-        VStack(spacing: 24) {
-            Spacer()
-
-            // Success animation
-            ZStack {
-                Circle()
-                    .fill(Color.green.opacity(0.2))
-                    .frame(width: 120, height: 120)
-
-                Image(systemName: "checkmark.circle.fill")
-                    .font(.system(size: 80))
-                    .foregroundColor(.green)
-            }
-
-            VStack(spacing: 8) {
-                Text(localization.localized("appointment_booked"))
-                    .font(.title.bold())
-
-                Text(localization.localized("appointment_confirmed"))
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-                    .multilineTextAlignment(.center)
-            }
-
-            // Appointment details card
-            VStack(alignment: .leading, spacing: 16) {
-                // Clinic
-                HStack(spacing: 12) {
-                    Image(systemName: clinic.type.icon)
-                        .foregroundColor(Color(clinic.type.color))
-                        .frame(width: 40)
-                    VStack(alignment: .leading) {
-                        Text(clinic.name)
-                            .font(.headline)
-                        Text(clinic.fullAddress)
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                }
-
-                Divider()
-
-                // Date & Time
-                HStack(spacing: 12) {
-                    Image(systemName: "calendar")
-                        .foregroundColor(.blue)
-                        .frame(width: 40)
-                    VStack(alignment: .leading) {
-                        Text(formattedDate)
-                            .font(.headline)
-                        Text(time)
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                    }
-                }
-
-                Divider()
-
-                // Type
-                HStack(spacing: 12) {
-                    Image(systemName: appointmentType.icon)
-                        .foregroundColor(.teal)
-                        .frame(width: 40)
-                    Text(appointmentType.displayName)
-                        .font(.headline)
-                }
-
-                // Special needs
-                if needsInterpreter || needsTransportation {
-                    Divider()
+        NavigationView {
+            Form {
+                // Instruction banner
+                Section {
                     HStack(spacing: 12) {
-                        Image(systemName: "star.fill")
-                            .foregroundColor(.purple)
-                            .frame(width: 40)
-                        VStack(alignment: .leading) {
-                            if needsInterpreter {
-                                Text("Interpreter requested")
-                                    .font(.subheadline)
+                        Image(systemName: "phone.arrow.up.right")
+                            .foregroundColor(.green)
+                            .font(.title2)
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(localization.localized("call_to_schedule"))
+                                .font(.subheadline.weight(.medium))
+                            Text(localization.localized("add_reminder_after"))
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    .padding(.vertical, 4)
+                }
+
+                // Clinic information
+                Section(localization.localized("clinic_info")) {
+                    TextField(localization.localized("clinic_name"), text: $clinicName)
+                        .focused($focusedField, equals: .clinicName)
+
+                    TextField(localization.localized("address_optional"), text: $clinicAddress)
+                        .focused($focusedField, equals: .address)
+
+                    TextField(localization.localized("phone_optional"), text: $clinicPhone)
+                        .focused($focusedField, equals: .phone)
+                        .keyboardType(.phonePad)
+                }
+
+                // Appointment type
+                Section(localization.localized("type_of_visit")) {
+                    Picker("Visit Type", selection: $selectedType) {
+                        ForEach(AppointmentType.allCases) { type in
+                            HStack {
+                                Image(systemName: type.icon)
+                                Text(type.displayName)
                             }
-                            if needsTransportation {
-                                Text("Transportation assistance requested")
-                                    .font(.subheadline)
-                            }
+                            .tag(type)
+                        }
+                    }
+                    .pickerStyle(.navigationLink)
+                }
+
+                // Date and time
+                Section(localization.localized("when")) {
+                    DatePicker(localization.localized("date"), selection: $selectedDate, in: Date()..., displayedComponents: .date)
+
+                    Picker(localization.localized("time"), selection: $selectedTime) {
+                        ForEach(timeSlots, id: \.self) { time in
+                            Text(time).tag(time)
+                        }
+                    }
+                    .pickerStyle(.navigationLink)
+                }
+
+                // Reminders for yourself
+                Section(localization.localized("reminders_for_visit")) {
+                    Toggle(isOn: $needsInterpreter) {
+                        HStack {
+                            Image(systemName: "bubble.left.and.bubble.right")
+                                .foregroundColor(.purple)
+                            Text(localization.localized("bring_interpreter_or_request"))
+                        }
+                    }
+
+                    Toggle(isOn: $needsTransportation) {
+                        HStack {
+                            Image(systemName: "car")
+                                .foregroundColor(.orange)
+                            Text(localization.localized("arrange_transportation"))
                         }
                     }
                 }
-            }
-            .padding()
-            .background(Color(.systemGray6))
-            .cornerRadius(16)
-            .padding(.horizontal)
 
-            Spacer()
+                // Notes
+                Section(localization.localized("notes_optional")) {
+                    TextField(localization.localized("notes_placeholder"), text: $notes, axis: .vertical)
+                        .focused($focusedField, equals: .notes)
+                        .lineLimit(3...6)
+                }
 
-            // Done button
-            Button(action: onDone) {
-                Text(localization.localized("done"))
-                    .fontWeight(.semibold)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(12)
+                // Add button
+                Section {
+                    Button(action: addReminder) {
+                        HStack {
+                            Spacer()
+                            Text(localization.localized("add_reminder"))
+                                .fontWeight(.semibold)
+                            Spacer()
+                        }
+                    }
+                    .disabled(clinicName.isEmpty)
+                    .foregroundColor(clinicName.isEmpty ? .gray : .white)
+                    .listRowBackground(clinicName.isEmpty ? Color.gray.opacity(0.3) : Color.blue)
+                }
             }
-            .padding(.horizontal)
-            .padding(.bottom, 30)
+            .navigationTitle(localization.localized("add_appointment"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(localization.localized("cancel")) { dismiss() }
+                }
+                ToolbarItem(placement: .keyboard) {
+                    Button(localization.localized("done")) {
+                        focusedField = nil
+                    }
+                }
+            }
+            .onAppear {
+                needsInterpreter = userProfile.needsInterpreter
+                needsTransportation = !userProfile.hasTransportation
+            }
         }
     }
 
-    var formattedDate: String {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .full
-        return formatter.string(from: date)
+    private func addReminder() {
+        let appointment = Appointment(
+            clinicId: UUID(),
+            clinicName: clinicName,
+            clinicAddress: clinicAddress,
+            clinicPhone: clinicPhone,
+            appointmentType: selectedType,
+            date: selectedDate,
+            time: selectedTime,
+            needsInterpreter: needsInterpreter,
+            interpreterLanguage: needsInterpreter ? userProfile.preferredLanguage : nil,
+            needsTransportation: needsTransportation,
+            notes: notes
+        )
+
+        appointmentsManager.add(appointment)
+        dismiss()
     }
 }
 

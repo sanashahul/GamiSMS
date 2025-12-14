@@ -736,17 +736,55 @@ struct ClinicDetailView: View {
                     .background(Color(.systemGray6))
                     .cornerRadius(12)
 
-                    // Book appointment button
-                    NavigationLink(destination: BookAppointmentView(clinic: clinic)) {
-                        HStack {
-                            Image(systemName: "calendar.badge.plus")
-                            Text(localization.localized("book_appointment"))
+                    // Call to schedule section - emphasize calling
+                    VStack(spacing: 16) {
+                        // Info banner
+                        HStack(spacing: 12) {
+                            Image(systemName: "phone.arrow.up.right")
+                                .foregroundColor(.green)
+                                .font(.title2)
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(localization.localized("call_to_schedule"))
+                                    .font(.subheadline.weight(.medium))
+                                Text(localization.localized("call_clinic_to_book"))
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
                         }
-                        .frame(maxWidth: .infinity)
                         .padding()
-                        .background(Color.blue)
-                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(Color.green.opacity(0.1))
                         .cornerRadius(12)
+
+                        // Call button - primary action
+                        Button(action: callClinic) {
+                            HStack {
+                                Image(systemName: "phone.fill")
+                                Text(localization.localized("call_now"))
+                                Text(clinic.phoneNumber)
+                                    .fontWeight(.regular)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color.green)
+                            .foregroundColor(.white)
+                            .cornerRadius(12)
+                        }
+
+                        // Website button if available
+                        if let website = clinic.website, let url = URL(string: website) {
+                            Button(action: { UIApplication.shared.open(url) }) {
+                                HStack {
+                                    Image(systemName: "globe")
+                                    Text(localization.localized("visit_website"))
+                                }
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(Color(.systemGray6))
+                                .foregroundColor(.blue)
+                                .cornerRadius(12)
+                            }
+                        }
                     }
                 }
                 .padding()
