@@ -297,10 +297,21 @@ enum FamilyStatus: String, CaseIterable, Codable, Identifiable {
     }
 }
 
-// MARK: - Language (simplified for homeless services)
+// MARK: - Language (expanded for diverse communities)
 enum PreferredLanguage: String, CaseIterable, Codable, Identifiable {
     case english = "en"
     case spanish = "es"
+    case arabic = "ar"
+    case somali = "so"
+    case mandarin = "zh"
+    case vietnamese = "vi"
+    case korean = "ko"
+    case french = "fr"
+    case russian = "ru"
+    case swahili = "sw"
+    case burmese = "my"
+    case dari = "prs"
+    case pashto = "ps"
     case other = "other"
 
     var id: String { rawValue }
@@ -309,6 +320,17 @@ enum PreferredLanguage: String, CaseIterable, Codable, Identifiable {
         switch self {
         case .english: return "English"
         case .spanish: return "Español"
+        case .arabic: return "العربية (Arabic)"
+        case .somali: return "Soomaali (Somali)"
+        case .mandarin: return "中文 (Chinese)"
+        case .vietnamese: return "Tiếng Việt (Vietnamese)"
+        case .korean: return "한국어 (Korean)"
+        case .french: return "Français (French)"
+        case .russian: return "Русский (Russian)"
+        case .swahili: return "Kiswahili (Swahili)"
+        case .burmese: return "မြန်မာဘာသာ (Burmese)"
+        case .dari: return "دری (Dari)"
+        case .pashto: return "پښتو (Pashto)"
         case .other: return "Other"
         }
     }
