@@ -5,18 +5,22 @@ struct DashboardView: View {
     @EnvironmentObject var appointmentsManager: AppointmentsManager
     @State private var selectedTab: ServiceArea?
 
+    private var sortedServiceAreas: [ServiceArea] {
+        Array(userProfile.selectedServiceAreas).sorted { $0.rawValue < $1.rawValue }
+    }
+
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
-                // Welcome Header
+                // Welcome Header with quick nav
                 WelcomeHeader(name: userProfile.name)
                     .padding()
 
-                // Service Tabs - only show tabs for selected services
+                // Enhanced Service Tabs - always show for quick switching
                 if userProfile.selectedServiceAreas.count > 1 {
-                    ServiceTabBar(
+                    EnhancedServiceTabBar(
                         selectedTab: $selectedTab,
-                        services: Array(userProfile.selectedServiceAreas).sorted { $0.rawValue < $1.rawValue }
+                        services: sortedServiceAreas
                     )
                 }
 
@@ -31,6 +35,16 @@ struct DashboardView: View {
                         if !appointmentsManager.upcomingAppointments.isEmpty {
                             UpcomingRemindersCard(appointments: appointmentsManager.upcomingAppointments)
                                 .padding(.horizontal)
+                        }
+
+                        // Quick access to other services (when viewing one)
+                        if userProfile.selectedServiceAreas.count > 1 {
+                            QuickSwitchBar(
+                                currentTab: selectedTab ?? .healthcare,
+                                services: sortedServiceAreas,
+                                onSelect: { selectedTab = $0 }
+                            )
+                            .padding(.horizontal)
                         }
 
                         // Service-specific content
@@ -56,6 +70,124 @@ struct DashboardView: View {
             if selectedTab == nil {
                 selectedTab = userProfile.selectedServiceAreas.first
             }
+        }
+    }
+}
+
+// MARK: - Enhanced Service Tab Bar
+struct EnhancedServiceTabBar: View {
+    @Binding var selectedTab: ServiceArea?
+    let services: [ServiceArea]
+
+    var body: some View {
+        HStack(spacing: 0) {
+            ForEach(services) { service in
+                EnhancedTabButton(
+                    service: service,
+                    isSelected: selectedTab == service,
+                    totalTabs: services.count,
+                    action: {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            selectedTab = service
+                        }
+                    }
+                )
+            }
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 4)
+        .background(Color(.systemGray6))
+        .cornerRadius(12)
+        .padding(.horizontal)
+        .padding(.bottom, 8)
+    }
+}
+
+struct EnhancedTabButton: View {
+    let service: ServiceArea
+    let isSelected: Bool
+    let totalTabs: Int
+    let action: () -> Void
+
+    var serviceColor: Color {
+        switch service {
+        case .healthcare: return .red
+        case .employment: return .blue
+        case .housing: return .green
+        }
+    }
+
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: 4) {
+                Image(systemName: service.icon)
+                    .font(.system(size: 18, weight: isSelected ? .semibold : .regular))
+                Text(service.displayName)
+                    .font(.caption2.weight(isSelected ? .semibold : .regular))
+            }
+            .foregroundColor(isSelected ? .white : .secondary)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 10)
+            .background(isSelected ? serviceColor : Color.clear)
+            .cornerRadius(10)
+        }
+    }
+}
+
+// MARK: - Quick Switch Bar
+struct QuickSwitchBar: View {
+    let currentTab: ServiceArea
+    let services: [ServiceArea]
+    let onSelect: (ServiceArea) -> Void
+
+    var otherServices: [ServiceArea] {
+        services.filter { $0 != currentTab }
+    }
+
+    var body: some View {
+        if !otherServices.isEmpty {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Quick Access")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+
+                HStack(spacing: 12) {
+                    ForEach(otherServices) { service in
+                        QuickSwitchButton(service: service) {
+                            withAnimation { onSelect(service) }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+struct QuickSwitchButton: View {
+    let service: ServiceArea
+    let action: () -> Void
+
+    var serviceColor: Color {
+        switch service {
+        case .healthcare: return .red
+        case .employment: return .blue
+        case .housing: return .green
+        }
+    }
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 6) {
+                Image(systemName: service.icon)
+                    .font(.caption)
+                Text(service.displayName)
+                    .font(.caption.weight(.medium))
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(serviceColor.opacity(0.15))
+            .foregroundColor(serviceColor)
+            .cornerRadius(20)
         }
     }
 }
@@ -94,57 +226,6 @@ struct WelcomeHeader: View {
     }
 }
 
-// MARK: - Service Tab Bar
-struct ServiceTabBar: View {
-    @Binding var selectedTab: ServiceArea?
-    let services: [ServiceArea]
-
-    var body: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 12) {
-                ForEach(services) { service in
-                    ServiceTabButton(
-                        service: service,
-                        isSelected: selectedTab == service,
-                        action: { selectedTab = service }
-                    )
-                }
-            }
-            .padding(.horizontal)
-        }
-        .padding(.vertical, 8)
-        .background(Color(.systemBackground))
-    }
-}
-
-struct ServiceTabButton: View {
-    let service: ServiceArea
-    let isSelected: Bool
-    let action: () -> Void
-
-    var serviceColor: Color {
-        switch service {
-        case .healthcare: return .red
-        case .employment: return .blue
-        case .housing: return .green
-        }
-    }
-
-    var body: some View {
-        Button(action: action) {
-            HStack(spacing: 8) {
-                Image(systemName: service.icon)
-                Text(service.displayName)
-                    .fontWeight(.medium)
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 10)
-            .background(isSelected ? serviceColor : Color(.systemGray6))
-            .foregroundColor(isSelected ? .white : .primary)
-            .cornerRadius(20)
-        }
-    }
-}
 
 // MARK: - Emergency Card
 struct EmergencyCard: View {
@@ -356,7 +437,7 @@ struct EmploymentDashboardContent: View {
                         title: "Find Jobs",
                         icon: "magnifyingglass",
                         color: .blue,
-                        destination: AnyView(JobSearchView())
+                        destination: AnyView(JobFinderMapView())
                     )
                     QuickActionCard(
                         title: "Job Training",
@@ -454,13 +535,13 @@ struct HousingDashboardContent: View {
                         title: "Find Shelter",
                         icon: "building.2.fill",
                         color: .green,
-                        destination: AnyView(ShelterFinderView())
+                        destination: AnyView(ShelterFinderMapView())
                     )
                     QuickActionCard(
                         title: "Housing Programs",
                         icon: "house.fill",
                         color: .teal,
-                        destination: AnyView(HousingProgramsView())
+                        destination: AnyView(HousingProgramsMapView())
                     )
                 }
                 .padding(.horizontal)
@@ -546,7 +627,7 @@ struct UrgentHousingCard: View {
 
             Spacer()
 
-            NavigationLink(destination: ShelterFinderView()) {
+            NavigationLink(destination: ShelterFinderMapView()) {
                 Text("Find")
                     .fontWeight(.semibold)
                     .padding(.horizontal, 16)
@@ -641,95 +722,99 @@ struct TipCard: View {
     }
 }
 
-// MARK: - Placeholder Views for Employment and Housing
-struct JobSearchView: View {
-    var body: some View {
-        ScrollView {
-            VStack(spacing: 16) {
-                Text("Job Search")
-                    .font(.title.bold())
-                    .padding(.top)
-
-                Text("Search for jobs in your area")
-                    .foregroundColor(.secondary)
-
-                VStack(spacing: 12) {
-                    JobResourceCard(
-                        title: "Workforce Center",
-                        description: "Free job search help, resume assistance, and training",
-                        phone: "211"
-                    )
-                    JobResourceCard(
-                        title: "Day Labor Centers",
-                        description: "Same-day work opportunities",
-                        phone: nil
-                    )
-                    JobResourceCard(
-                        title: "Goodwill Career Centers",
-                        description: "Job training and placement services",
-                        phone: nil
-                    )
-                }
-                .padding(.horizontal)
-            }
-        }
-        .navigationTitle("Find Jobs")
-    }
-}
-
-struct JobResourceCard: View {
-    let title: String
-    let description: String
-    let phone: String?
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(title)
-                .font(.headline)
-            Text(description)
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-            if let phone = phone {
-                Button(action: {
-                    if let url = URL(string: "tel://\(phone)") {
-                        UIApplication.shared.open(url)
-                    }
-                }) {
-                    HStack {
-                        Image(systemName: "phone.fill")
-                        Text("Call \(phone)")
-                    }
-                    .font(.subheadline.weight(.medium))
-                    .foregroundColor(.blue)
-                }
-            }
-        }
-        .padding()
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(.systemBackground))
-        .cornerRadius(12)
-        .shadow(color: .black.opacity(0.05), radius: 5)
-    }
-}
-
+// MARK: - Job Training View (Specialized Training Programs)
 struct JobTrainingView: View {
+    @EnvironmentObject var userProfile: UserProfile
+    @StateObject private var resourceService = ResourceService.shared
+    @StateObject private var locationService = LocationService.shared
+    @State private var trainingResources: [Resource] = []
+
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
-                Text("Job Training")
-                    .font(.title.bold())
-                    .padding(.top)
-
-                VStack(spacing: 12) {
-                    TrainingCard(title: "Computer Skills", description: "Learn basic computer and internet skills", icon: "desktopcomputer")
-                    TrainingCard(title: "Food Handler Certification", description: "Get certified for restaurant work", icon: "fork.knife")
-                    TrainingCard(title: "Construction Training", description: "OSHA certification and trade skills", icon: "hammer")
-                    TrainingCard(title: "Healthcare Training", description: "CNA and caregiving certification", icon: "heart.fill")
+                // Call 211 Banner
+                HStack(spacing: 12) {
+                    Image(systemName: "phone.fill").foregroundColor(.white)
+                    VStack(alignment: .leading) {
+                        Text("Need training help?").font(.headline).foregroundColor(.white)
+                        Text("Call 211 for local programs").font(.caption).foregroundColor(.white.opacity(0.9))
+                    }
+                    Spacer()
+                    Button("Call") {
+                        if let url = URL(string: "tel://211") { UIApplication.shared.open(url) }
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    .background(Color.white)
+                    .foregroundColor(.purple)
+                    .cornerRadius(8)
                 }
+                .padding()
+                .background(Color.purple)
+                .cornerRadius(16)
                 .padding(.horizontal)
+
+                // Training Categories
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Training Programs")
+                        .font(.headline)
+                        .padding(.horizontal)
+
+                    VStack(spacing: 12) {
+                        TrainingCard(title: "Computer Skills", description: "Learn basic computer and internet skills", icon: "desktopcomputer")
+                        TrainingCard(title: "Food Handler Certification", description: "Get certified for restaurant work", icon: "fork.knife")
+                        TrainingCard(title: "Construction Training", description: "OSHA certification and trade skills", icon: "hammer")
+                        TrainingCard(title: "Healthcare Training", description: "CNA and caregiving certification", icon: "heart.fill")
+                        TrainingCard(title: "Warehouse & Logistics", description: "Forklift certification and inventory", icon: "shippingbox")
+                        TrainingCard(title: "Customer Service", description: "Retail and call center training", icon: "person.fill.questionmark")
+                    }
+                    .padding(.horizontal)
+                }
+
+                // Nearby Training Centers (if available)
+                if !trainingResources.isEmpty {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Training Centers Near You")
+                            .font(.headline)
+                            .padding(.horizontal)
+
+                        ForEach(trainingResources.prefix(3)) { resource in
+                            TrainingLocationCard(resource: resource)
+                                .padding(.horizontal)
+                        }
+
+                        NavigationLink(destination: ResourceFinderView(
+                            category: .employment,
+                            title: "Job Training",
+                            filterTypes: [.jobTraining, .careerCenter]
+                        )) {
+                            HStack {
+                                Text("See All Training Centers")
+                                Image(systemName: "arrow.right")
+                            }
+                            .font(.subheadline.weight(.medium))
+                            .foregroundColor(.purple)
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(Color.purple.opacity(0.1))
+                            .cornerRadius(12)
+                        }
+                        .padding(.horizontal)
+                    }
+                }
             }
+            .padding(.vertical)
         }
-        .navigationTitle("Training Programs")
+        .navigationTitle("Job Training")
+        .onAppear {
+            loadTrainingResources()
+        }
+    }
+
+    private func loadTrainingResources() {
+        if let location = locationService.currentLocation {
+            trainingResources = resourceService.getResources(type: .jobTraining, near: location, radius: 50)
+        }
     }
 }
 
@@ -750,6 +835,8 @@ struct TrainingCard: View {
                 Text(description).font(.subheadline).foregroundColor(.secondary)
             }
             Spacer()
+            Image(systemName: "chevron.right")
+                .foregroundColor(.secondary)
         }
         .padding()
         .background(Color(.systemBackground))
@@ -758,74 +845,42 @@ struct TrainingCard: View {
     }
 }
 
-struct ShelterFinderView: View {
+struct TrainingLocationCard: View {
+    let resource: Resource
+
     var body: some View {
-        ScrollView {
-            VStack(spacing: 16) {
-                HStack(spacing: 12) {
-                    Image(systemName: "phone.fill").foregroundColor(.white)
-                    VStack(alignment: .leading) {
-                        Text("Need help now?").font(.headline).foregroundColor(.white)
-                        Text("Call 211 for shelter availability").font(.caption).foregroundColor(.white.opacity(0.9))
-                    }
-                    Spacer()
-                    Button("Call") {
-                        if let url = URL(string: "tel://211") { UIApplication.shared.open(url) }
-                    }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
-                    .background(Color.white)
-                    .foregroundColor(.green)
-                    .cornerRadius(8)
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Image(systemName: "graduationcap.fill")
+                    .foregroundColor(.purple)
+                Text(resource.name)
+                    .font(.subheadline.weight(.medium))
+                    .lineLimit(1)
+                Spacer()
+                if let distance = resource.distance {
+                    Text(String(format: "%.1f mi", distance))
+                        .font(.caption)
+                        .foregroundColor(.secondary)
                 }
-                .padding()
-                .background(Color.green)
-                .cornerRadius(16)
-                .padding(.horizontal)
-
-                Text("Shelters and services will be loaded based on your location")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-                    .padding()
             }
-        }
-        .navigationTitle("Find Shelter")
-    }
-}
+            Text(resource.fullAddress)
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .lineLimit(1)
 
-struct HousingProgramsView: View {
-    var body: some View {
-        ScrollView {
-            VStack(spacing: 16) {
-                Text("Housing Programs").font(.title.bold()).padding(.top)
-
-                VStack(spacing: 12) {
-                    HousingProgramCard(title: "Section 8 / Housing Choice Voucher", description: "Rental assistance for qualifying individuals", icon: "house.fill")
-                    HousingProgramCard(title: "Rapid Re-Housing", description: "Short-term rental assistance and case management", icon: "arrow.right.circle.fill")
-                    HousingProgramCard(title: "Permanent Supportive Housing", description: "Long-term housing with support services", icon: "building.2.fill")
-                    HousingProgramCard(title: "Emergency Housing Vouchers", description: "Priority vouchers for homeless individuals", icon: "star.fill")
+            Button(action: {
+                let number = resource.phoneNumber.replacingOccurrences(of: "[^0-9]", with: "", options: .regularExpression)
+                if let url = URL(string: "tel://\(number)") {
+                    UIApplication.shared.open(url)
                 }
-                .padding(.horizontal)
+            }) {
+                HStack {
+                    Image(systemName: "phone.fill")
+                    Text("Call")
+                }
+                .font(.caption.weight(.medium))
+                .foregroundColor(.purple)
             }
-        }
-        .navigationTitle("Housing Programs")
-    }
-}
-
-struct HousingProgramCard: View {
-    let title: String
-    let description: String
-    let icon: String
-
-    var body: some View {
-        HStack(spacing: 16) {
-            Image(systemName: icon).font(.title).foregroundColor(.green).frame(width: 50)
-            VStack(alignment: .leading, spacing: 4) {
-                Text(title).font(.headline)
-                Text(description).font(.subheadline).foregroundColor(.secondary)
-            }
-            Spacer()
-            Image(systemName: "chevron.right").foregroundColor(.secondary)
         }
         .padding()
         .background(Color(.systemBackground))
