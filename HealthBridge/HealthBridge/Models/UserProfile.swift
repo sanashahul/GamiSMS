@@ -272,6 +272,33 @@ enum IDDocumentStatus: String, CaseIterable, Codable, Identifiable {
     }
 }
 
+// MARK: - Education Level (for Employment)
+enum EducationLevel: String, CaseIterable, Codable, Identifiable {
+    case noFormal = "none"
+    case someHighSchool = "some_hs"
+    case highSchool = "hs"
+    case someCollege = "some_college"
+    case associate = "associate"
+    case bachelors = "bachelors"
+    case graduate = "graduate"
+    case trade = "trade"
+
+    var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .noFormal: return "No formal education"
+        case .someHighSchool: return "Some high school"
+        case .highSchool: return "High school diploma / GED"
+        case .someCollege: return "Some college"
+        case .associate: return "Associate degree"
+        case .bachelors: return "Bachelor's degree"
+        case .graduate: return "Graduate degree"
+        case .trade: return "Trade / Vocational certificate"
+        }
+    }
+}
+
 // MARK: - Family Status
 enum FamilyStatus: String, CaseIterable, Codable, Identifiable {
     case single = "single"
@@ -346,29 +373,32 @@ class UserProfile: ObservableObject, Codable {
     // Selected Service Areas
     @Published var selectedServiceAreas: Set<ServiceArea> = []
 
-    // Healthcare Questions (6)
+    // Healthcare Questions (7)
     @Published var insuranceStatus: InsuranceStatus = .unsure
     @Published var urgentHealthNeeds: UrgentHealthNeed = .none
     @Published var chronicConditions: [ChronicCondition] = []
     @Published var needsMentalHealthSupport: Bool = false
     @Published var needsDentalCare: Bool = false
     @Published var needsMedications: Bool = false
+    @Published var needsVisionCare: Bool = false  // Q7
 
-    // Employment Questions (6)
+    // Employment Questions (7)
     @Published var employmentStatus: EmploymentStatus = .unemployedLooking
     @Published var preferredWorkTypes: [WorkType] = []
     @Published var hasResume: Bool = false
     @Published var hasWorkExperience: Bool = false
     @Published var needsJobTraining: Bool = false
     @Published var jobBarriers: [JobBarrier] = []
+    @Published var educationLevel: EducationLevel = .highSchool  // Q7
 
-    // Housing Questions (6)
+    // Housing Questions (7)
     @Published var currentHousingSituation: CurrentHousingSituation = .shelter
     @Published var isOnHousingWaitlist: Bool = false
     @Published var hasIncomeForRent: Bool = false
     @Published var housingBarriers: [HousingBarrier] = []
     @Published var idDocumentStatus: IDDocumentStatus = .someDocuments
     @Published var familyStatus: FamilyStatus = .single
+    @Published var hasPets: Bool = false  // Q7
 
     // Additional common info
     @Published var hasTransportation: Bool = false
@@ -378,11 +408,11 @@ class UserProfile: ObservableObject, Codable {
     enum CodingKeys: String, CodingKey {
         case name, preferredLanguage, zipCode, selectedServiceAreas
         case insuranceStatus, urgentHealthNeeds, chronicConditions
-        case needsMentalHealthSupport, needsDentalCare, needsMedications
+        case needsMentalHealthSupport, needsDentalCare, needsMedications, needsVisionCare
         case employmentStatus, preferredWorkTypes, hasResume
-        case hasWorkExperience, needsJobTraining, jobBarriers
+        case hasWorkExperience, needsJobTraining, jobBarriers, educationLevel
         case currentHousingSituation, isOnHousingWaitlist, hasIncomeForRent
-        case housingBarriers, idDocumentStatus, familyStatus
+        case housingBarriers, idDocumentStatus, familyStatus, hasPets
         case hasTransportation, hasPhone, needsInterpreter
     }
 
@@ -400,18 +430,21 @@ class UserProfile: ObservableObject, Codable {
         needsMentalHealthSupport = try container.decodeIfPresent(Bool.self, forKey: .needsMentalHealthSupport) ?? false
         needsDentalCare = try container.decodeIfPresent(Bool.self, forKey: .needsDentalCare) ?? false
         needsMedications = try container.decodeIfPresent(Bool.self, forKey: .needsMedications) ?? false
+        needsVisionCare = try container.decodeIfPresent(Bool.self, forKey: .needsVisionCare) ?? false
         employmentStatus = try container.decodeIfPresent(EmploymentStatus.self, forKey: .employmentStatus) ?? .unemployedLooking
         preferredWorkTypes = try container.decodeIfPresent([WorkType].self, forKey: .preferredWorkTypes) ?? []
         hasResume = try container.decodeIfPresent(Bool.self, forKey: .hasResume) ?? false
         hasWorkExperience = try container.decodeIfPresent(Bool.self, forKey: .hasWorkExperience) ?? false
         needsJobTraining = try container.decodeIfPresent(Bool.self, forKey: .needsJobTraining) ?? false
         jobBarriers = try container.decodeIfPresent([JobBarrier].self, forKey: .jobBarriers) ?? []
+        educationLevel = try container.decodeIfPresent(EducationLevel.self, forKey: .educationLevel) ?? .highSchool
         currentHousingSituation = try container.decodeIfPresent(CurrentHousingSituation.self, forKey: .currentHousingSituation) ?? .shelter
         isOnHousingWaitlist = try container.decodeIfPresent(Bool.self, forKey: .isOnHousingWaitlist) ?? false
         hasIncomeForRent = try container.decodeIfPresent(Bool.self, forKey: .hasIncomeForRent) ?? false
         housingBarriers = try container.decodeIfPresent([HousingBarrier].self, forKey: .housingBarriers) ?? []
         idDocumentStatus = try container.decodeIfPresent(IDDocumentStatus.self, forKey: .idDocumentStatus) ?? .someDocuments
         familyStatus = try container.decodeIfPresent(FamilyStatus.self, forKey: .familyStatus) ?? .single
+        hasPets = try container.decodeIfPresent(Bool.self, forKey: .hasPets) ?? false
         hasTransportation = try container.decodeIfPresent(Bool.self, forKey: .hasTransportation) ?? false
         hasPhone = try container.decodeIfPresent(Bool.self, forKey: .hasPhone) ?? true
         needsInterpreter = try container.decodeIfPresent(Bool.self, forKey: .needsInterpreter) ?? false
@@ -429,18 +462,21 @@ class UserProfile: ObservableObject, Codable {
         try container.encode(needsMentalHealthSupport, forKey: .needsMentalHealthSupport)
         try container.encode(needsDentalCare, forKey: .needsDentalCare)
         try container.encode(needsMedications, forKey: .needsMedications)
+        try container.encode(needsVisionCare, forKey: .needsVisionCare)
         try container.encode(employmentStatus, forKey: .employmentStatus)
         try container.encode(preferredWorkTypes, forKey: .preferredWorkTypes)
         try container.encode(hasResume, forKey: .hasResume)
         try container.encode(hasWorkExperience, forKey: .hasWorkExperience)
         try container.encode(needsJobTraining, forKey: .needsJobTraining)
         try container.encode(jobBarriers, forKey: .jobBarriers)
+        try container.encode(educationLevel, forKey: .educationLevel)
         try container.encode(currentHousingSituation, forKey: .currentHousingSituation)
         try container.encode(isOnHousingWaitlist, forKey: .isOnHousingWaitlist)
         try container.encode(hasIncomeForRent, forKey: .hasIncomeForRent)
         try container.encode(housingBarriers, forKey: .housingBarriers)
         try container.encode(idDocumentStatus, forKey: .idDocumentStatus)
         try container.encode(familyStatus, forKey: .familyStatus)
+        try container.encode(hasPets, forKey: .hasPets)
         try container.encode(hasTransportation, forKey: .hasTransportation)
         try container.encode(hasPhone, forKey: .hasPhone)
         try container.encode(needsInterpreter, forKey: .needsInterpreter)
