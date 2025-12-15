@@ -118,17 +118,12 @@ class ClinicService: ObservableObject {
 
     // MARK: - Main Entry Point: Get clinics for any location
     // This is the primary method that ClinicFinderView should use
-    func loadClinics(near location: CLLocation, forStatus status: ImmigrationStatus? = nil, radius: Double = 50.0) {
+    func loadClinics(near location: CLLocation, radius: Double = 50.0) {
         isLoading = true
         searchComplete = false
 
         // First, get static database clinics
-        var staticClinics = getClinicsFromDatabase(near: location, radius: radius)
-
-        // Filter by status if provided
-        if let status = status {
-            staticClinics = filterClinicsForStatus(staticClinics, status: status)
-        }
+        let staticClinics = getClinicsFromDatabase(near: location, radius: radius)
 
         // If we have enough static clinics, use them
         if staticClinics.count >= minimumStaticClinics {
@@ -345,31 +340,16 @@ class ClinicService: ObservableObject {
         return getClinicsFromDatabase(near: location, radius: radius)
     }
 
-    // Filter clinics based on immigration status
-    func filterClinicsForStatus(_ clinics: [Clinic], status: ImmigrationStatus) -> [Clinic] {
-        switch status {
-        case .undocumented:
-            // Prioritize: FQHCs, free clinics, and those that explicitly don't ask immigration status
-            return clinics.filter { clinic in
-                clinic.services.acceptsUninsured &&
-                (clinic.services.freeServices || clinic.services.slidingScale || clinic.services.emergencyMedicaid)
-            }.sorted { clinic1, clinic2 in
-                // Prioritize free services
-                if clinic1.services.freeServices && !clinic2.services.freeServices { return true }
-                if !clinic1.services.freeServices && clinic2.services.freeServices { return false }
-                return (clinic1.distance ?? 0) < (clinic2.distance ?? 0)
-            }
-
-        case .refugee, .asylumSeeker:
-            // Prioritize refugee health programs
-            return clinics.sorted { clinic1, clinic2 in
-                if clinic1.type == .refugeeHealth && clinic2.type != .refugeeHealth { return true }
-                if clinic1.type != .refugeeHealth && clinic2.type == .refugeeHealth { return false }
-                return (clinic1.distance ?? 0) < (clinic2.distance ?? 0)
-            }
-
-        default:
-            return clinics
+    // Filter clinics for uninsured patients
+    func filterClinicsForUninsured(_ clinics: [Clinic]) -> [Clinic] {
+        return clinics.filter { clinic in
+            clinic.services.acceptsUninsured &&
+            (clinic.services.freeServices || clinic.services.slidingScale || clinic.services.emergencyMedicaid)
+        }.sorted { clinic1, clinic2 in
+            // Prioritize free services
+            if clinic1.services.freeServices && !clinic2.services.freeServices { return true }
+            if !clinic1.services.freeServices && clinic2.services.freeServices { return false }
+            return (clinic1.distance ?? 0) < (clinic2.distance ?? 0)
         }
     }
 
@@ -1100,7 +1080,7 @@ class ClinicService: ObservableObject {
         Clinic(
             id: UUID(),
             name: "Heartland Alliance Health - Refugee Health",
-            type: .refugeeHealth,
+            type: .homelessHealth,
             address: "4411 N Ravenswood Ave",
             city: "Chicago",
             state: "IL",
@@ -1373,7 +1353,7 @@ class ClinicService: ObservableObject {
         Clinic(
             id: UUID(),
             name: "Ryan Health - Refugee Health Program",
-            type: .refugeeHealth,
+            type: .homelessHealth,
             address: "110 W 97th St",
             city: "New York",
             state: "NY",

@@ -5,7 +5,6 @@ import CoreLocation
 enum ClinicType: String, CaseIterable, Codable, Identifiable {
     case communityHealth = "community_health"
     case freeClinic = "free_clinic"
-    case refugeeHealth = "refugee_health"
     case homelessHealth = "homeless_health"
     case urgentCare = "urgent_care"
     case emergency = "emergency"
@@ -22,7 +21,6 @@ enum ClinicType: String, CaseIterable, Codable, Identifiable {
         switch self {
         case .communityHealth: return "Community Health Center"
         case .freeClinic: return "Free Clinic"
-        case .refugeeHealth: return "Refugee Health Services"
         case .homelessHealth: return "Healthcare for the Homeless"
         case .urgentCare: return "Urgent Care"
         case .emergency: return "Emergency Room"
@@ -39,7 +37,6 @@ enum ClinicType: String, CaseIterable, Codable, Identifiable {
         switch self {
         case .communityHealth: return "building.2"
         case .freeClinic: return "cross.case"
-        case .refugeeHealth: return "figure.walk.arrival"
         case .homelessHealth: return "hand.raised"
         case .urgentCare: return "staroflife"
         case .emergency: return "cross.circle.fill"
@@ -56,7 +53,6 @@ enum ClinicType: String, CaseIterable, Codable, Identifiable {
         switch self {
         case .communityHealth: return "blue"
         case .freeClinic: return "green"
-        case .refugeeHealth: return "purple"
         case .homelessHealth: return "orange"
         case .urgentCare: return "red"
         case .emergency: return "red"
@@ -70,13 +66,56 @@ enum ClinicType: String, CaseIterable, Codable, Identifiable {
     }
 }
 
+// MARK: - Clinic Language (specific to clinics, more options than user preference)
+enum ClinicLanguage: String, CaseIterable, Codable, Identifiable {
+    case english = "en"
+    case spanish = "es"
+    case mandarin = "zh"
+    case vietnamese = "vi"
+    case tagalog = "tl"
+    case korean = "ko"
+    case arabic = "ar"
+    case french = "fr"
+    case russian = "ru"
+    case portuguese = "pt"
+    case somali = "so"
+    case swahili = "sw"
+    case burmese = "my"
+    case dari = "prs"
+    case pashto = "ps"
+    case other = "other"
+
+    var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .english: return "English"
+        case .spanish: return "Español"
+        case .mandarin: return "中文"
+        case .vietnamese: return "Tiếng Việt"
+        case .tagalog: return "Tagalog"
+        case .korean: return "한국어"
+        case .arabic: return "العربية"
+        case .french: return "Français"
+        case .russian: return "Русский"
+        case .portuguese: return "Português"
+        case .somali: return "Soomaali"
+        case .swahili: return "Kiswahili"
+        case .burmese: return "မြန်မာဘာသာ"
+        case .dari: return "دری"
+        case .pashto: return "پښتو"
+        case .other: return "Other"
+        }
+    }
+}
+
 // MARK: - Clinic Services
 struct ClinicServices: Codable {
     var acceptsUninsured: Bool = false
     var slidingScale: Bool = false
     var freeServices: Bool = false
     var interpreterAvailable: Bool = false
-    var languages: [PreferredLanguage] = []
+    var languages: [ClinicLanguage] = []
     var walkInsAccepted: Bool = false
     var telehealth: Bool = false
     var transportationHelp: Bool = false
@@ -191,7 +230,7 @@ struct Clinic: Identifiable, Codable {
                 OperatingHours(dayOfWeek: 7, openTime: "09:00", closeTime: "14:00")
             ],
             description: "A federally qualified health center providing comprehensive primary care services to all community members regardless of ability to pay.",
-            specialNotes: "Refugee health screening available. Call for interpreter services.",
+            specialNotes: "Health screening available. Call for interpreter services.",
             rating: 4.5,
             reviewCount: 234
         ),
@@ -241,8 +280,8 @@ struct Clinic: Identifiable, Codable {
         ),
         Clinic(
             id: UUID(),
-            name: "Refugee Wellness Center",
-            type: .refugeeHealth,
+            name: "Homeless Health Services Center",
+            type: .homelessHealth,
             address: "789 Unity Boulevard",
             city: "Chicago",
             state: "IL",
@@ -257,8 +296,8 @@ struct Clinic: Identifiable, Codable {
                 slidingScale: true,
                 freeServices: false,
                 interpreterAvailable: true,
-                languages: [.english, .arabic, .somali, .swahili, .dari, .pashto, .burmese],
-                walkInsAccepted: false,
+                languages: [.english, .spanish, .somali, .swahili, .arabic],
+                walkInsAccepted: true,
                 telehealth: true,
                 transportationHelp: true,
                 mentalHealth: true,
@@ -278,8 +317,8 @@ struct Clinic: Identifiable, Codable {
                 OperatingHours(dayOfWeek: 6, openTime: "09:00", closeTime: "17:00", isClosed: true),
                 OperatingHours(dayOfWeek: 7, openTime: "09:00", closeTime: "17:00", isClosed: true)
             ],
-            description: "Specialized health services for refugees and asylum seekers, including initial health screenings, mental health support, and case management.",
-            specialNotes: "Interpreters available in 20+ languages. Cultural health navigators on staff.",
+            description: "Specialized health services for people experiencing homelessness, including health screenings, mental health support, and case management.",
+            specialNotes: "Interpreters available. Walk-ins welcome. No ID required.",
             rating: 4.9,
             reviewCount: 156
         )
