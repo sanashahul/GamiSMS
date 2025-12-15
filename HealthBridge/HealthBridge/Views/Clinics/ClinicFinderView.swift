@@ -12,6 +12,7 @@ struct ClinicFinderView: View {
     @State private var showFilters = false
     @State private var selectedClinic: Clinic?
     @State private var showMap = false
+    @State private var hasLoadedClinics = false
     @FocusState private var isSearchFocused: Bool
 
     @State private var region = MKCoordinateRegion(
@@ -20,7 +21,12 @@ struct ClinicFinderView: View {
     )
 
     var allClinics: [Clinic] {
-        // Get clinics from service, prioritize based on location
+        // Use combined clinics from service (static + MapKit)
+        if !clinicService.combinedClinics.isEmpty {
+            return clinicService.combinedClinics
+        }
+
+        // Fallback while loading
         if let location = locationService.currentLocation {
             return clinicService.getClinics(near: location, radius: 100)
         } else if !userProfile.zipCode.isEmpty {
@@ -104,12 +110,35 @@ struct ClinicFinderView: View {
                 .padding()
                 .background(Color(.systemBackground))
 
-                // Results count
+                // Results count and loading state
                 HStack {
-                    Text("\(filteredClinics.count) clinics found")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                    if clinicService.isLoading {
+                        HStack(spacing: 8) {
+                            ProgressView()
+                                .scaleEffect(0.8)
+                            Text(clinicService.isSearchingMapKit ?
+                                 localization.localized("searching_nearby") :
+                                 localization.localized("loading"))
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    } else {
+                        Text("\(filteredClinics.count) \(localization.localized("clinics_found"))")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
                     Spacer()
+
+                    // Location indicator
+                    if let city = locationService.currentCity, !city.isEmpty {
+                        HStack(spacing: 4) {
+                            Image(systemName: "location.fill")
+                                .font(.caption2)
+                            Text(city)
+                                .font(.caption)
+                        }
+                        .foregroundColor(.blue)
+                    }
                 }
                 .padding(.horizontal)
                 .padding(.bottom, 4)
@@ -142,7 +171,49 @@ struct ClinicFinderView: View {
                 isSearchFocused = false
             }
             .onAppear {
+                loadClinicsForCurrentLocation()
                 updateMapRegion()
+            }
+            .onChange(of: locationService.currentLocation) { newLocation in
+                // Reload clinics when location changes
+                if let location = newLocation, !hasLoadedClinics {
+                    loadClinicsForLocation(location)
+                }
+            }
+            .onChange(of: userProfile.zipCode) { newZip in
+                // Reload when ZIP code changes (if no GPS location)
+                if locationService.currentLocation == nil && newZip.count == 5 {
+                    loadClinicsForZipCode(newZip)
+                }
+            }
+        }
+    }
+
+    // MARK: - Clinic Loading Methods
+
+    private func loadClinicsForCurrentLocation() {
+        if let location = locationService.currentLocation {
+            loadClinicsForLocation(location)
+        } else if !userProfile.zipCode.isEmpty && userProfile.zipCode.count == 5 {
+            loadClinicsForZipCode(userProfile.zipCode)
+        }
+    }
+
+    private func loadClinicsForLocation(_ location: CLLocation) {
+        hasLoadedClinics = true
+        clinicService.loadClinics(
+            near: location,
+            forStatus: userProfile.immigrationStatus,
+            radius: 50.0
+        )
+        updateMapRegion()
+    }
+
+    private func loadClinicsForZipCode(_ zipCode: String) {
+        // Geocode ZIP code first, then load clinics
+        locationService.geocodeZipCode(zipCode) { location in
+            if let location = location {
+                loadClinicsForLocation(location)
             }
         }
     }
@@ -214,22 +285,80 @@ struct FilterChip: View {
 struct ClinicListView: View {
     let clinics: [Clinic]
     @Binding var selectedClinic: Clinic?
+    @StateObject private var clinicService = ClinicService.shared
+    @StateObject private var localization = LocalizationManager.shared
 
     var body: some View {
-        if clinics.isEmpty {
+        if clinicService.isLoading {
+            VStack(spacing: 16) {
+                ProgressView()
+                    .scaleEffect(1.5)
+                Text(clinicService.isSearchingMapKit ?
+                     localization.localized("searching_nearby") :
+                     localization.localized("loading"))
+                    .font(.headline)
+                Text(localization.localized("finding_best_clinics"))
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        } else if clinics.isEmpty {
             VStack(spacing: 16) {
                 Image(systemName: "building.2")
                     .font(.system(size: 50))
                     .foregroundColor(.secondary)
-                Text("No clinics found")
+                Text(localization.localized("no_clinics_found"))
                     .font(.headline)
-                Text("Try adjusting your filters or search")
+                Text(localization.localized("try_adjusting_filters"))
                     .font(.subheadline)
                     .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal)
+
+                // Suggestion to enable location
+                VStack(spacing: 8) {
+                    Text(localization.localized("enable_location_tip"))
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+
+                    Button(action: {
+                        if let url = URL(string: UIApplication.openSettingsURLString) {
+                            UIApplication.shared.open(url)
+                        }
+                    }) {
+                        Text(localization.localized("open_settings"))
+                            .font(.subheadline.weight(.medium))
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                            .background(Color.blue)
+                            .foregroundColor(.white)
+                            .cornerRadius(8)
+                    }
+                }
+                .padding(.top, 8)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .padding()
         } else {
             ScrollView {
+                // Info banner for MapKit-sourced clinics
+                if clinicService.nearbyMapKitClinics.count > 0 && clinicService.combinedClinics.count > 0 {
+                    HStack(spacing: 8) {
+                        Image(systemName: "info.circle.fill")
+                            .foregroundColor(.blue)
+                        Text(localization.localized("mapkit_clinics_note"))
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    .padding()
+                    .background(Color.blue.opacity(0.1))
+                    .cornerRadius(8)
+                    .padding(.horizontal)
+                    .padding(.top, 8)
+                }
+
                 LazyVStack(spacing: 12) {
                     ForEach(clinics) { clinic in
                         ClinicCard(clinic: clinic)
@@ -607,17 +736,55 @@ struct ClinicDetailView: View {
                     .background(Color(.systemGray6))
                     .cornerRadius(12)
 
-                    // Book appointment button
-                    NavigationLink(destination: BookAppointmentView(clinic: clinic)) {
-                        HStack {
-                            Image(systemName: "calendar.badge.plus")
-                            Text(localization.localized("book_appointment"))
+                    // Call to schedule section - emphasize calling
+                    VStack(spacing: 16) {
+                        // Info banner
+                        HStack(spacing: 12) {
+                            Image(systemName: "phone.arrow.up.right")
+                                .foregroundColor(.green)
+                                .font(.title2)
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(localization.localized("call_to_schedule"))
+                                    .font(.subheadline.weight(.medium))
+                                Text(localization.localized("call_clinic_to_book"))
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
                         }
-                        .frame(maxWidth: .infinity)
                         .padding()
-                        .background(Color.blue)
-                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(Color.green.opacity(0.1))
                         .cornerRadius(12)
+
+                        // Call button - primary action
+                        Button(action: callClinic) {
+                            HStack {
+                                Image(systemName: "phone.fill")
+                                Text(localization.localized("call_now"))
+                                Text(clinic.phoneNumber)
+                                    .fontWeight(.regular)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color.green)
+                            .foregroundColor(.white)
+                            .cornerRadius(12)
+                        }
+
+                        // Website button if available
+                        if let website = clinic.website, let url = URL(string: website) {
+                            Button(action: { UIApplication.shared.open(url) }) {
+                                HStack {
+                                    Image(systemName: "globe")
+                                    Text(localization.localized("visit_website"))
+                                }
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(Color(.systemGray6))
+                                .foregroundColor(.blue)
+                                .cornerRadius(12)
+                            }
+                        }
                     }
                 }
                 .padding()

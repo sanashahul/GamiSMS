@@ -32,7 +32,7 @@ struct OnboardingCompleteView: View {
                 Text("You're All Set!")
                     .font(.largeTitle.bold())
 
-                Text("Welcome to HealthBridge, \(userProfile.name.isEmpty ? "friend" : userProfile.name)!")
+                Text("Welcome, \(userProfile.name.isEmpty ? "friend" : userProfile.name)!")
                     .font(.title3)
                     .foregroundColor(.secondary)
             }
@@ -41,47 +41,53 @@ struct OnboardingCompleteView: View {
 
             Spacer()
 
-            // Summary
+            // Summary based on selected services
             VStack(alignment: .leading, spacing: 16) {
-                Text("What we'll help you with:")
+                Text("We'll help you with:")
                     .font(.headline)
 
                 VStack(alignment: .leading, spacing: 12) {
-                    SummaryItem(
-                        icon: "mappin.circle.fill",
-                        color: .blue,
-                        text: "Find clinics that welcome \(statusText)"
-                    )
-
-                    if userProfile.insuranceStatus == .none {
+                    // Healthcare summary
+                    if userProfile.needsHealthcare {
                         SummaryItem(
-                            icon: "dollarsign.circle.fill",
-                            color: .green,
-                            text: "Free and sliding-scale clinics"
-                        )
-                    }
-
-                    if userProfile.needsInterpreter {
-                        SummaryItem(
-                            icon: "bubble.left.and.bubble.right.fill",
-                            color: .purple,
-                            text: "Clinics with \(userProfile.preferredLanguage.displayName) interpreters"
-                        )
-                    }
-
-                    if !userProfile.healthConcerns.isEmpty {
-                        SummaryItem(
-                            icon: "heart.fill",
+                            icon: "cross.case.fill",
                             color: .red,
-                            text: "Care for: \(concernsText)"
+                            text: healthcareSummary
                         )
                     }
 
-                    if userProfile.needsHomelessServices {
+                    // Employment summary
+                    if userProfile.needsEmployment {
                         SummaryItem(
-                            icon: "hand.raised.fill",
+                            icon: "briefcase.fill",
+                            color: .blue,
+                            text: employmentSummary
+                        )
+                    }
+
+                    // Housing summary
+                    if userProfile.needsHousing {
+                        SummaryItem(
+                            icon: "house.fill",
+                            color: .green,
+                            text: housingSummary
+                        )
+                    }
+
+                    // Additional services
+                    if userProfile.needsIDHelp {
+                        SummaryItem(
+                            icon: "person.text.rectangle",
                             color: .orange,
-                            text: "Healthcare for the Homeless programs"
+                            text: "Help getting ID documents"
+                        )
+                    }
+
+                    if userProfile.isVeteran {
+                        SummaryItem(
+                            icon: "star.fill",
+                            color: .purple,
+                            text: "Veteran-specific programs and services"
                         )
                     }
                 }
@@ -98,7 +104,7 @@ struct OnboardingCompleteView: View {
             // Get Started button
             Button(action: onComplete) {
                 HStack {
-                    Text("Get Started")
+                    Text("Let's Go!")
                         .fontWeight(.semibold)
                     Image(systemName: "arrow.right")
                 }
@@ -120,24 +126,53 @@ struct OnboardingCompleteView: View {
         }
     }
 
-    private var statusText: String {
-        switch userProfile.immigrationStatus {
-        case .refugee: return "refugees"
-        case .asylumSeeker: return "asylum seekers"
-        case .undocumented: return "everyone regardless of status"
-        case .visa: return "visa holders"
-        case .greenCard: return "green card holders"
-        case .citizen: return "all patients"
-        case .other, .none: return "everyone"
+    private var healthcareSummary: String {
+        var parts: [String] = []
+        if userProfile.insuranceStatus == .none || userProfile.insuranceStatus == .unsure {
+            parts.append("free clinics")
         }
+        if userProfile.needsMentalHealthSupport {
+            parts.append("mental health support")
+        }
+        if userProfile.needsDentalCare {
+            parts.append("dental care")
+        }
+        if parts.isEmpty {
+            return "Healthcare clinics in your area"
+        }
+        return "Find " + parts.joined(separator: ", ")
     }
 
-    private var concernsText: String {
-        let concerns = userProfile.healthConcerns.prefix(2).map { $0.displayName }
-        if userProfile.healthConcerns.count > 2 {
-            return concerns.joined(separator: ", ") + ", and more"
+    private var employmentSummary: String {
+        var parts: [String] = []
+        if !userProfile.hasResume {
+            parts.append("resume help")
         }
-        return concerns.joined(separator: " and ")
+        if userProfile.needsJobTraining {
+            parts.append("job training")
+        }
+        if userProfile.employmentStatus == .unemployedLooking {
+            parts.append("job placement")
+        }
+        if parts.isEmpty {
+            return "Employment resources and opportunities"
+        }
+        return "Connect you with " + parts.joined(separator: ", ")
+    }
+
+    private var housingSummary: String {
+        switch userProfile.currentHousingSituation {
+        case .street, .vehicle:
+            return "Emergency shelter and housing programs"
+        case .shelter:
+            return "Transitional housing and permanent housing options"
+        case .temporaryWithOthers:
+            return "Housing assistance and waitlist signup"
+        case .motel:
+            return "Affordable housing and rental assistance"
+        case .transitionHousing:
+            return "Permanent housing options and support"
+        }
     }
 }
 

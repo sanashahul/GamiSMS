@@ -5,20 +5,27 @@ struct OnboardingContainerView: View {
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
     @State private var currentStep = 0
 
-    let totalSteps = 8
+    // Calculate total steps dynamically based on service selections
+    var totalSteps: Int {
+        var steps = 4 // Welcome, Name, Service Selection, Location, Complete
+        if userProfile.selectedServiceAreas.contains(.healthcare) { steps += 2 }
+        if userProfile.selectedServiceAreas.contains(.employment) { steps += 2 }
+        if userProfile.selectedServiceAreas.contains(.housing) { steps += 2 }
+        return steps
+    }
 
     var body: some View {
         ZStack {
             // Background gradient
             LinearGradient(
-                colors: [Color.blue.opacity(0.1), Color.teal.opacity(0.1)],
+                colors: [Color.blue.opacity(0.1), Color.green.opacity(0.1)],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
             .ignoresSafeArea()
 
             VStack(spacing: 0) {
-                // Progress bar
+                // Progress bar (hide on welcome)
                 if currentStep > 0 {
                     ProgressView(value: Double(currentStep), total: Double(totalSteps))
                         .progressViewStyle(LinearProgressViewStyle(tint: .blue))
@@ -27,41 +34,95 @@ struct OnboardingContainerView: View {
                 }
 
                 // Content
-                TabView(selection: $currentStep) {
-                    WelcomeView(onContinue: { currentStep = 1 })
-                        .tag(0)
-
-                    LanguageSelectionView(onContinue: { currentStep = 2 })
-                        .tag(1)
-
-                    StatusSelectionView(onContinue: { currentStep = 3 })
-                        .tag(2)
-
-                    HousingSelectionView(onContinue: { currentStep = 4 })
-                        .tag(3)
-
-                    PersonalInfoView(onContinue: { currentStep = 5 })
-                        .tag(4)
-
-                    HealthNeedsView(onContinue: { currentStep = 6 })
-                        .tag(5)
-
-                    InsuranceView(onContinue: { currentStep = 7 })
-                        .tag(6)
-
-                    LocationView(onContinue: { currentStep = 8 })
-                        .tag(7)
-
-                    OnboardingCompleteView(onComplete: {
-                        userProfile.save()
-                        withAnimation {
-                            hasCompletedOnboarding = true
-                        }
-                    })
-                    .tag(8)
+                Group {
+                    switch currentStep {
+                    case 0:
+                        WelcomeView(onContinue: { withAnimation { currentStep = 1 } })
+                    case 1:
+                        NameInputView(onContinue: { withAnimation { currentStep = 2 } })
+                    case 2:
+                        ServiceSelectionView(onContinue: { withAnimation { currentStep = 3 } })
+                    default:
+                        dynamicStepView
+                    }
                 }
-                .tabViewStyle(.page(indexDisplayMode: .never))
-                .animation(.easeInOut, value: currentStep)
+                .transition(.asymmetric(
+                    insertion: .move(edge: .trailing).combined(with: .opacity),
+                    removal: .move(edge: .leading).combined(with: .opacity)
+                ))
+            }
+        }
+    }
+
+    // Dynamic step views based on service selections
+    @ViewBuilder
+    var dynamicStepView: some View {
+        let stepAfterServiceSelection = currentStep - 3
+
+        // Calculate which service area questions to show
+        let services = Array(userProfile.selectedServiceAreas).sorted { $0.rawValue < $1.rawValue }
+        var currentServiceIndex = 0
+        var questionSetIndex = 0 // 0 = first 3 questions, 1 = second 3 questions
+
+        // Figure out where we are in the flow
+        var stepsConsumed = 0
+        for (index, service) in services.enumerated() {
+            if stepAfterServiceSelection < stepsConsumed + 2 {
+                currentServiceIndex = index
+                questionSetIndex = stepAfterServiceSelection - stepsConsumed
+                break
+            }
+            stepsConsumed += 2
+        }
+
+        // Check if we're past all service questions
+        let totalServiceSteps = services.count * 2
+        if stepAfterServiceSelection >= totalServiceSteps {
+            // Location or Complete
+            if stepAfterServiceSelection == totalServiceSteps {
+                LocationInputView(onContinue: { withAnimation { currentStep += 1 } })
+            } else {
+                OnboardingCompleteView(onComplete: {
+                    userProfile.save()
+                    withAnimation {
+                        hasCompletedOnboarding = true
+                    }
+                })
+            }
+        } else if services.isEmpty {
+            // No services selected, go straight to location
+            if stepAfterServiceSelection == 0 {
+                LocationInputView(onContinue: { withAnimation { currentStep += 1 } })
+            } else {
+                OnboardingCompleteView(onComplete: {
+                    userProfile.save()
+                    withAnimation {
+                        hasCompletedOnboarding = true
+                    }
+                })
+            }
+        } else {
+            // Show service-specific questions
+            let service = services[currentServiceIndex]
+            switch service {
+            case .healthcare:
+                if questionSetIndex == 0 {
+                    HealthcareQuestions1View(onContinue: { withAnimation { currentStep += 1 } })
+                } else {
+                    HealthcareQuestions2View(onContinue: { withAnimation { currentStep += 1 } })
+                }
+            case .employment:
+                if questionSetIndex == 0 {
+                    EmploymentQuestions1View(onContinue: { withAnimation { currentStep += 1 } })
+                } else {
+                    EmploymentQuestions2View(onContinue: { withAnimation { currentStep += 1 } })
+                }
+            case .housing:
+                if questionSetIndex == 0 {
+                    HousingQuestions1View(onContinue: { withAnimation { currentStep += 1 } })
+                } else {
+                    HousingQuestions2View(onContinue: { withAnimation { currentStep += 1 } })
+                }
             }
         }
     }
@@ -79,13 +140,13 @@ struct WelcomeView: View {
             ZStack {
                 Circle()
                     .fill(LinearGradient(
-                        colors: [.blue, .teal],
+                        colors: [.blue, .green],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     ))
                     .frame(width: 120, height: 120)
 
-                Image(systemName: "heart.text.square.fill")
+                Image(systemName: "hands.sparkles.fill")
                     .font(.system(size: 60))
                     .foregroundColor(.white)
             }
@@ -95,11 +156,11 @@ struct WelcomeView: View {
                     .font(.title2)
                     .foregroundColor(.secondary)
 
-                Text("HealthBridge")
+                Text("CareConnect")
                     .font(.system(size: 40, weight: .bold))
                     .foregroundColor(.primary)
 
-                Text("Your guide to healthcare in a new country")
+                Text("Your path to healthcare, jobs, and housing")
                     .font(.title3)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
@@ -110,21 +171,17 @@ struct WelcomeView: View {
 
             // Features list
             VStack(alignment: .leading, spacing: 20) {
-                FeatureRow(icon: "mappin.circle.fill", color: .blue,
-                          title: "Find Care Near You",
-                          subtitle: "Locate clinics that welcome everyone")
+                FeatureRow(icon: "cross.case.fill", color: .red,
+                          title: "Healthcare",
+                          subtitle: "Find clinics and get the care you need")
 
-                FeatureRow(icon: "calendar.badge.plus", color: .green,
-                          title: "Easy Appointments",
-                          subtitle: "Schedule visits with one tap")
+                FeatureRow(icon: "briefcase.fill", color: .blue,
+                          title: "Employment",
+                          subtitle: "Job search, training, and career help")
 
-                FeatureRow(icon: "book.fill", color: .purple,
-                          title: "Learn the System",
-                          subtitle: "Understand your healthcare rights")
-
-                FeatureRow(icon: "globe", color: .orange,
-                          title: "Your Language",
-                          subtitle: "Available in multiple languages")
+                FeatureRow(icon: "house.fill", color: .green,
+                          title: "Housing",
+                          subtitle: "Shelters, programs, and stable housing")
             }
             .padding(.horizontal, 30)
 
@@ -132,7 +189,7 @@ struct WelcomeView: View {
 
             Button(action: onContinue) {
                 HStack {
-                    Text("Let's Get Started")
+                    Text("Get Started")
                         .fontWeight(.semibold)
                     Image(systemName: "arrow.right")
                 }
@@ -148,6 +205,171 @@ struct WelcomeView: View {
     }
 }
 
+// MARK: - Name Input View
+struct NameInputView: View {
+    @EnvironmentObject var userProfile: UserProfile
+    let onContinue: () -> Void
+    @FocusState private var isFocused: Bool
+
+    var body: some View {
+        VStack(spacing: 30) {
+            Spacer()
+
+            VStack(spacing: 16) {
+                Image(systemName: "person.crop.circle")
+                    .font(.system(size: 60))
+                    .foregroundColor(.blue)
+
+                Text("What's your name?")
+                    .font(.title.bold())
+
+                Text("We'll use this to personalize your experience")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+            }
+
+            TextField("Enter your name", text: $userProfile.name)
+                .font(.title2)
+                .multilineTextAlignment(.center)
+                .padding()
+                .background(Color(.systemGray6))
+                .cornerRadius(12)
+                .padding(.horizontal, 40)
+                .focused($isFocused)
+
+            Spacer()
+
+            Button(action: {
+                isFocused = false
+                onContinue()
+            }) {
+                HStack {
+                    Text("Continue")
+                        .fontWeight(.semibold)
+                    Image(systemName: "arrow.right")
+                }
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(userProfile.name.isEmpty ? Color.gray : Color.blue)
+                .foregroundColor(.white)
+                .cornerRadius(16)
+            }
+            .disabled(userProfile.name.isEmpty)
+            .padding(.horizontal, 30)
+            .padding(.bottom, 40)
+        }
+        .onTapGesture { isFocused = false }
+    }
+}
+
+// MARK: - Service Selection View
+struct ServiceSelectionView: View {
+    @EnvironmentObject var userProfile: UserProfile
+    let onContinue: () -> Void
+
+    var body: some View {
+        VStack(spacing: 30) {
+            VStack(spacing: 16) {
+                Text("Hi, \(userProfile.name)!")
+                    .font(.title.bold())
+
+                Text("What do you need help with?")
+                    .font(.title2)
+                    .foregroundColor(.secondary)
+
+                Text("Select all that apply")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+            }
+            .padding(.top, 40)
+
+            VStack(spacing: 16) {
+                ForEach(ServiceArea.allCases) { service in
+                    ServiceAreaCard(
+                        service: service,
+                        isSelected: userProfile.selectedServiceAreas.contains(service),
+                        onToggle: {
+                            if userProfile.selectedServiceAreas.contains(service) {
+                                userProfile.selectedServiceAreas.remove(service)
+                            } else {
+                                userProfile.selectedServiceAreas.insert(service)
+                            }
+                        }
+                    )
+                }
+            }
+            .padding(.horizontal, 30)
+
+            Spacer()
+
+            Button(action: onContinue) {
+                HStack {
+                    Text("Continue")
+                        .fontWeight(.semibold)
+                    Image(systemName: "arrow.right")
+                }
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(userProfile.selectedServiceAreas.isEmpty ? Color.gray : Color.blue)
+                .foregroundColor(.white)
+                .cornerRadius(16)
+            }
+            .disabled(userProfile.selectedServiceAreas.isEmpty)
+            .padding(.horizontal, 30)
+            .padding(.bottom, 40)
+        }
+    }
+}
+
+struct ServiceAreaCard: View {
+    let service: ServiceArea
+    let isSelected: Bool
+    let onToggle: () -> Void
+
+    var serviceColor: Color {
+        switch service {
+        case .healthcare: return .red
+        case .employment: return .blue
+        case .housing: return .green
+        }
+    }
+
+    var body: some View {
+        Button(action: onToggle) {
+            HStack(spacing: 16) {
+                Image(systemName: service.icon)
+                    .font(.title)
+                    .foregroundColor(serviceColor)
+                    .frame(width: 50)
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(service.displayName)
+                        .font(.headline)
+                        .foregroundColor(.primary)
+                    Text(service.description)
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+
+                Spacer()
+
+                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                    .font(.title2)
+                    .foregroundColor(isSelected ? serviceColor : .gray)
+            }
+            .padding()
+            .background(isSelected ? serviceColor.opacity(0.1) : Color(.systemGray6))
+            .cornerRadius(16)
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(isSelected ? serviceColor : Color.clear, lineWidth: 2)
+            )
+        }
+    }
+}
+
+// MARK: - Feature Row
 struct FeatureRow: View {
     let icon: String
     let color: Color
