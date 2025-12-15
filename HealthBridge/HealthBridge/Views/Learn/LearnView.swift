@@ -161,7 +161,8 @@ struct LearnView: View {
     var recommendedTopics: [LearnTopic] {
         var topics: [LearnTopic] = []
 
-        if userProfile.immigrationStatus == .undocumented || userProfile.insuranceStatus == .none {
+        // Recommend insurance/free care info for uninsured users
+        if userProfile.insuranceStatus == .none || userProfile.insuranceStatus == .unsure {
             topics.append(LearnTopic(
                 icon: "hand.raised.fill",
                 title: "Care Without Insurance",
@@ -170,30 +171,35 @@ struct LearnView: View {
             ))
         }
 
-        if userProfile.immigrationStatus == .refugee || userProfile.immigrationStatus == .asylumSeeker {
+        // Recommend homeless health resources for those in unstable housing
+        if userProfile.currentHousingSituation == .street ||
+           userProfile.currentHousingSituation == .shelter ||
+           userProfile.currentHousingSituation == .vehicle {
             topics.append(LearnTopic(
-                icon: "figure.walk.arrival",
-                title: "Refugee Health Programs",
+                icon: "house.lodge.fill",
+                title: "Homeless Health Programs",
                 description: "Special services for you",
                 color: .purple
             ))
         }
 
-        if userProfile.healthConcerns.contains(.mentalHealth) {
+        // Recommend mental health if user indicated need
+        if userProfile.needsMentalHealthSupport {
             topics.append(LearnTopic(
                 icon: "brain.head.profile",
                 title: "Mental Health Support",
-                description: "Healing from trauma",
+                description: "Counseling and support",
                 color: .teal
             ))
         }
 
-        if userProfile.healthConcerns.contains(.pregnancy) {
+        // Recommend dental care if user indicated need
+        if userProfile.needsDentalCare {
             topics.append(LearnTopic(
-                icon: "figure.and.child.holdinghands",
-                title: "Prenatal Care",
-                description: "Care during pregnancy",
-                color: .pink
+                icon: "mouth.fill",
+                title: "Dental Care",
+                description: "Free and low-cost options",
+                color: .cyan
             ))
         }
 
