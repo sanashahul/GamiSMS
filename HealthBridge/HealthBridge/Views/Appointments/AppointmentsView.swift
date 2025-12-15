@@ -379,7 +379,7 @@ struct AddAppointmentReminderView: View {
     @State private var clinicName = ""
     @State private var clinicAddress = ""
     @State private var clinicPhone = ""
-    @State private var selectedType: AppointmentType = .general
+    @State private var selectedType: AppointmentType = .checkup
     @State private var selectedDate = Date()
     @State private var selectedTime = "9:00 AM"
     @State private var needsInterpreter = false
