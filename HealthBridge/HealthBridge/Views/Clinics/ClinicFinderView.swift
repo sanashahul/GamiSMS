@@ -130,11 +130,11 @@ struct ClinicFinderView: View {
                     Spacer()
 
                     // Location indicator
-                    if let city = locationService.currentCity, !city.isEmpty {
+                    if !locationService.currentCity.isEmpty {
                         HStack(spacing: 4) {
                             Image(systemName: "location.fill")
                                 .font(.caption2)
-                            Text(city)
+                            Text(locationService.currentCity)
                                 .font(.caption)
                         }
                         .foregroundColor(.blue)
