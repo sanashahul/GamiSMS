@@ -54,19 +54,50 @@ struct OnboardingContainerView: View {
         }
     }
 
-    // Dynamic step views based on service selections
-    @ViewBuilder
-    var dynamicStepView: some View {
-        let stepAfterServiceSelection = currentStep - 3
+    // Helper enum to determine which view to show
+    enum DynamicStepType {
+        case locationInput
+        case onboardingComplete
+        case healthcareQuestions1
+        case healthcareQuestions2
+        case employmentQuestions1
+        case employmentQuestions2
+        case housingQuestions1
+        case housingQuestions2
+    }
 
-        // Calculate which service area questions to show
+    // Compute which step type to show (non-ViewBuilder logic)
+    func computeStepType() -> DynamicStepType {
+        let stepAfterServiceSelection = currentStep - 3
         let services = Array(userProfile.selectedServiceAreas).sorted { $0.rawValue < $1.rawValue }
-        var currentServiceIndex = 0
-        var questionSetIndex = 0 // 0 = first 3 questions, 1 = second 3 questions
+
+        // Handle empty services case
+        if services.isEmpty {
+            if stepAfterServiceSelection == 0 {
+                return .locationInput
+            } else {
+                return .onboardingComplete
+            }
+        }
+
+        // Calculate total service steps
+        let totalServiceSteps = services.count * 2
+
+        // Check if we're past all service questions
+        if stepAfterServiceSelection >= totalServiceSteps {
+            if stepAfterServiceSelection == totalServiceSteps {
+                return .locationInput
+            } else {
+                return .onboardingComplete
+            }
+        }
 
         // Figure out where we are in the flow
         var stepsConsumed = 0
-        for (index, service) in services.enumerated() {
+        var currentServiceIndex = 0
+        var questionSetIndex = 0
+
+        for (index, _) in services.enumerated() {
             if stepAfterServiceSelection < stepsConsumed + 2 {
                 currentServiceIndex = index
                 questionSetIndex = stepAfterServiceSelection - stepsConsumed
@@ -75,55 +106,43 @@ struct OnboardingContainerView: View {
             stepsConsumed += 2
         }
 
-        // Check if we're past all service questions
-        let totalServiceSteps = services.count * 2
-        if stepAfterServiceSelection >= totalServiceSteps {
-            // Location or Complete
-            if stepAfterServiceSelection == totalServiceSteps {
-                LocationInputView(onContinue: { withAnimation { currentStep += 1 } })
-            } else {
-                OnboardingCompleteView(onComplete: {
-                    userProfile.save()
-                    withAnimation {
-                        hasCompletedOnboarding = true
-                    }
-                })
-            }
-        } else if services.isEmpty {
-            // No services selected, go straight to location
-            if stepAfterServiceSelection == 0 {
-                LocationInputView(onContinue: { withAnimation { currentStep += 1 } })
-            } else {
-                OnboardingCompleteView(onComplete: {
-                    userProfile.save()
-                    withAnimation {
-                        hasCompletedOnboarding = true
-                    }
-                })
-            }
-        } else {
-            // Show service-specific questions
-            let service = services[currentServiceIndex]
-            switch service {
-            case .healthcare:
-                if questionSetIndex == 0 {
-                    HealthcareQuestions1View(onContinue: { withAnimation { currentStep += 1 } })
-                } else {
-                    HealthcareQuestions2View(onContinue: { withAnimation { currentStep += 1 } })
+        // Return the appropriate step type
+        let service = services[currentServiceIndex]
+        switch service {
+        case .healthcare:
+            return questionSetIndex == 0 ? .healthcareQuestions1 : .healthcareQuestions2
+        case .employment:
+            return questionSetIndex == 0 ? .employmentQuestions1 : .employmentQuestions2
+        case .housing:
+            return questionSetIndex == 0 ? .housingQuestions1 : .housingQuestions2
+        }
+    }
+
+    // Dynamic step views based on service selections
+    @ViewBuilder
+    var dynamicStepView: some View {
+        switch computeStepType() {
+        case .locationInput:
+            LocationView(onContinue: { withAnimation { currentStep += 1 } })
+        case .onboardingComplete:
+            OnboardingCompleteView(onComplete: {
+                userProfile.save()
+                withAnimation {
+                    hasCompletedOnboarding = true
                 }
-            case .employment:
-                if questionSetIndex == 0 {
-                    EmploymentQuestions1View(onContinue: { withAnimation { currentStep += 1 } })
-                } else {
-                    EmploymentQuestions2View(onContinue: { withAnimation { currentStep += 1 } })
-                }
-            case .housing:
-                if questionSetIndex == 0 {
-                    HousingQuestions1View(onContinue: { withAnimation { currentStep += 1 } })
-                } else {
-                    HousingQuestions2View(onContinue: { withAnimation { currentStep += 1 } })
-                }
-            }
+            })
+        case .healthcareQuestions1:
+            HealthcareQuestions1View(onContinue: { withAnimation { currentStep += 1 } })
+        case .healthcareQuestions2:
+            HealthcareQuestions2View(onContinue: { withAnimation { currentStep += 1 } })
+        case .employmentQuestions1:
+            EmploymentQuestions1View(onContinue: { withAnimation { currentStep += 1 } })
+        case .employmentQuestions2:
+            EmploymentQuestions2View(onContinue: { withAnimation { currentStep += 1 } })
+        case .housingQuestions1:
+            HousingQuestions1View(onContinue: { withAnimation { currentStep += 1 } })
+        case .housingQuestions2:
+            HousingQuestions2View(onContinue: { withAnimation { currentStep += 1 } })
         }
     }
 }

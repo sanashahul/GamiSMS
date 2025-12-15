@@ -13,12 +13,6 @@
 		F1000004 /* Clinic.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2000004; };
 		F1000005 /* Appointment.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2000005; };
 		F1000006 /* OnboardingContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2000006; };
-		F1000007 /* LanguageSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2000007; };
-		F1000008 /* StatusSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2000008; };
-		F1000009 /* HousingSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2000009; };
-		F1000010 /* PersonalInfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2000010; };
-		F1000011 /* HealthNeedsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2000011; };
-		F1000012 /* InsuranceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2000012; };
 		F1000013 /* LocationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2000013; };
 		F1000014 /* OnboardingCompleteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2000014; };
 		F1000015 /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2000015; };
@@ -29,6 +23,11 @@
 		F1000020 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F2000021; };
 		F1000021 /* LocalizationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2000022; };
 		F1000022 /* LocationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2000023; };
+		F1000030 /* HealthcareQuestionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2000030; };
+		F1000031 /* EmploymentQuestionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2000031; };
+		F1000032 /* HousingQuestionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2000032; };
+		F1000033 /* Resource.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2000033; };
+		F1000034 /* ResourceFinderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2000034; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -38,12 +37,6 @@
 		F2000004 /* Clinic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Clinic.swift; sourceTree = "<group>"; };
 		F2000005 /* Appointment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Appointment.swift; sourceTree = "<group>"; };
 		F2000006 /* OnboardingContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingContainerView.swift; sourceTree = "<group>"; };
-		F2000007 /* LanguageSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguageSelectionView.swift; sourceTree = "<group>"; };
-		F2000008 /* StatusSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusSelectionView.swift; sourceTree = "<group>"; };
-		F2000009 /* HousingSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HousingSelectionView.swift; sourceTree = "<group>"; };
-		F2000010 /* PersonalInfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonalInfoView.swift; sourceTree = "<group>"; };
-		F2000011 /* HealthNeedsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthNeedsView.swift; sourceTree = "<group>"; };
-		F2000012 /* InsuranceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsuranceView.swift; sourceTree = "<group>"; };
 		F2000013 /* LocationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationView.swift; sourceTree = "<group>"; };
 		F2000014 /* OnboardingCompleteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingCompleteView.swift; sourceTree = "<group>"; };
 		F2000015 /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
@@ -55,6 +48,11 @@
 		F2000021 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		F2000022 /* LocalizationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizationManager.swift; sourceTree = "<group>"; };
 		F2000023 /* LocationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationService.swift; sourceTree = "<group>"; };
+		F2000030 /* HealthcareQuestionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthcareQuestionsView.swift; sourceTree = "<group>"; };
+		F2000031 /* EmploymentQuestionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmploymentQuestionsView.swift; sourceTree = "<group>"; };
+		F2000032 /* HousingQuestionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HousingQuestionsView.swift; sourceTree = "<group>"; };
+		F2000033 /* Resource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Resource.swift; sourceTree = "<group>"; };
+		F2000034 /* ResourceFinderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResourceFinderView.swift; sourceTree = "<group>"; };
 		F3000001 /* HealthBridge.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HealthBridge.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -117,6 +115,7 @@
 				F2000003 /* UserProfile.swift */,
 				F2000004 /* Clinic.swift */,
 				F2000005 /* Appointment.swift */,
+				F2000033 /* Resource.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -129,20 +128,26 @@
 				F5000007 /* Clinics */,
 				F5000008 /* Appointments */,
 				F5000009 /* Learn */,
+				F5000012 /* Resources */,
 			);
 			path = Views;
+			sourceTree = "<group>";
+		};
+		F5000012 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				F2000034 /* ResourceFinderView.swift */,
+			);
+			path = Resources;
 			sourceTree = "<group>";
 		};
 		F5000005 /* Onboarding */ = {
 			isa = PBXGroup;
 			children = (
 				F2000006 /* OnboardingContainerView.swift */,
-				F2000007 /* LanguageSelectionView.swift */,
-				F2000008 /* StatusSelectionView.swift */,
-				F2000009 /* HousingSelectionView.swift */,
-				F2000010 /* PersonalInfoView.swift */,
-				F2000011 /* HealthNeedsView.swift */,
-				F2000012 /* InsuranceView.swift */,
+				F2000030 /* HealthcareQuestionsView.swift */,
+				F2000031 /* EmploymentQuestionsView.swift */,
+				F2000032 /* HousingQuestionsView.swift */,
 				F2000013 /* LocationView.swift */,
 				F2000014 /* OnboardingCompleteView.swift */,
 			);
@@ -261,12 +266,6 @@
 				F1000004 /* Clinic.swift in Sources */,
 				F1000005 /* Appointment.swift in Sources */,
 				F1000006 /* OnboardingContainerView.swift in Sources */,
-				F1000007 /* LanguageSelectionView.swift in Sources */,
-				F1000008 /* StatusSelectionView.swift in Sources */,
-				F1000009 /* HousingSelectionView.swift in Sources */,
-				F1000010 /* PersonalInfoView.swift in Sources */,
-				F1000011 /* HealthNeedsView.swift in Sources */,
-				F1000012 /* InsuranceView.swift in Sources */,
 				F1000013 /* LocationView.swift in Sources */,
 				F1000014 /* OnboardingCompleteView.swift in Sources */,
 				F1000015 /* MainTabView.swift in Sources */,
@@ -276,6 +275,11 @@
 				F1000019 /* LearnView.swift in Sources */,
 				F1000021 /* LocalizationManager.swift in Sources */,
 				F1000022 /* LocationService.swift in Sources */,
+				F1000030 /* HealthcareQuestionsView.swift in Sources */,
+				F1000031 /* EmploymentQuestionsView.swift in Sources */,
+				F1000032 /* HousingQuestionsView.swift in Sources */,
+				F1000033 /* Resource.swift in Sources */,
+				F1000034 /* ResourceFinderView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
