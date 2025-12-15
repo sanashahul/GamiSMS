@@ -203,7 +203,6 @@ struct ClinicFinderView: View {
         hasLoadedClinics = true
         clinicService.loadClinics(
             near: location,
-            forStatus: userProfile.immigrationStatus,
             radius: 50.0
         )
         updateMapRegion()
@@ -235,19 +234,20 @@ struct ClinicFinderView: View {
     var recommendedFilters: [ClinicType] {
         var filters: [ClinicType] = [.communityHealth, .freeClinic]
 
-        if userProfile.immigrationStatus == .refugee || userProfile.immigrationStatus == .asylumSeeker {
-            filters.insert(.refugeeHealth, at: 0)
-        }
-
-        if userProfile.housingStatus == .homeless || userProfile.housingStatus == .shelter {
+        // Prioritize homeless health for people in unstable housing
+        if userProfile.currentHousingSituation == .street ||
+           userProfile.currentHousingSituation == .shelter ||
+           userProfile.currentHousingSituation == .vehicle {
             filters.insert(.homelessHealth, at: 0)
         }
 
-        if userProfile.healthConcerns.contains(.mentalHealth) {
+        // Add mental health if user indicated need
+        if userProfile.needsMentalHealthSupport {
             filters.append(.mentalHealth)
         }
 
-        if userProfile.healthConcerns.contains(.dental) {
+        // Add dental if user indicated need
+        if userProfile.needsDentalCare {
             filters.append(.dental)
         }
 
