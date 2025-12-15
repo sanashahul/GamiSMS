@@ -212,6 +212,25 @@ struct EmploymentQuestions2View: View {
                 }
                 .padding(.horizontal)
 
+                // Q7: Education Level
+                VStack(alignment: .leading, spacing: 12) {
+                    Label("What is your highest education level?", systemImage: "book.closed")
+                        .font(.headline)
+
+                    Text("This helps match you with appropriate opportunities")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+
+                    ForEach(EducationLevel.allCases) { level in
+                        SelectionButton(
+                            title: level.displayName,
+                            isSelected: userProfile.educationLevel == level,
+                            action: { userProfile.educationLevel = level }
+                        )
+                    }
+                }
+                .padding(.horizontal)
+
                 // Encouraging message
                 HStack(spacing: 12) {
                     Image(systemName: "star.fill")

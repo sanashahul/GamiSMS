@@ -225,6 +225,41 @@ struct HousingQuestions2View: View {
                 }
                 .padding(.horizontal)
 
+                // Q7: Pets
+                VStack(alignment: .leading, spacing: 12) {
+                    Label("Do you have pets that need to stay with you?", systemImage: "pawprint.fill")
+                        .font(.headline)
+
+                    Text("Some shelters and housing programs accept pets")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+
+                    HStack(spacing: 16) {
+                        YesNoButton(
+                            title: "Yes",
+                            isSelected: userProfile.hasPets,
+                            action: { userProfile.hasPets = true }
+                        )
+                        YesNoButton(
+                            title: "No",
+                            isSelected: !userProfile.hasPets,
+                            action: { userProfile.hasPets = false }
+                        )
+                    }
+
+                    if userProfile.hasPets {
+                        HStack(spacing: 8) {
+                            Image(systemName: "info.circle.fill")
+                                .foregroundColor(.blue)
+                            Text("We'll help you find pet-friendly options")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        .padding(.top, 4)
+                    }
+                }
+                .padding(.horizontal)
+
                 // Special programs info
                 if userProfile.familyStatus == .veteran {
                     InfoBanner(

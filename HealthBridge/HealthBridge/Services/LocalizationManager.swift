@@ -31,8 +31,8 @@ struct LocalizedStrings {
     static let englishStrings: [String: String] = [
         // Welcome & Onboarding
         "welcome_to": "Welcome to",
-        "app_name": "HealthBridge",
-        "app_tagline": "Your guide to healthcare in a new country",
+        "app_name": "CareConnect",
+        "app_tagline": "Your path to healthcare, jobs, and housing",
         "lets_get_started": "Let's Get Started",
         "continue": "Continue",
         "back": "Back",
@@ -132,7 +132,7 @@ struct LocalizedStrings {
 
         // Onboarding Complete
         "youre_all_set": "You're All Set!",
-        "setup_complete": "We've personalized your HealthBridge experience based on your needs.",
+        "setup_complete": "We've personalized your CareConnect experience based on your needs.",
         "start_exploring": "Start Exploring",
 
         // Dashboard
@@ -204,7 +204,7 @@ struct LocalizedStrings {
         "notifications": "Notifications",
         "privacy": "Privacy",
         "help_support": "Help & Support",
-        "about_app": "About HealthBridge",
+        "about_app": "About CareConnect",
         "sign_out": "Sign Out",
 
         // Common
@@ -346,8 +346,8 @@ struct LocalizedStrings {
     static let spanishStrings: [String: String] = [
         // Welcome & Onboarding
         "welcome_to": "Bienvenido a",
-        "app_name": "HealthBridge",
-        "app_tagline": "Tu guía de salud en un nuevo país",
+        "app_name": "CareConnect",
+        "app_tagline": "Tu camino a salud, empleo y vivienda",
         "lets_get_started": "Comenzar",
         "continue": "Continuar",
         "back": "Atrás",
@@ -447,7 +447,7 @@ struct LocalizedStrings {
 
         // Onboarding Complete
         "youre_all_set": "¡Todo Listo!",
-        "setup_complete": "Hemos personalizado tu experiencia de HealthBridge según tus necesidades.",
+        "setup_complete": "Hemos personalizado tu experiencia de CareConnect según tus necesidades.",
         "start_exploring": "Comenzar a Explorar",
 
         // Dashboard
@@ -519,7 +519,7 @@ struct LocalizedStrings {
         "notifications": "Notificaciones",
         "privacy": "Privacidad",
         "help_support": "Ayuda y Soporte",
-        "about_app": "Acerca de HealthBridge",
+        "about_app": "Acerca de CareConnect",
         "sign_out": "Cerrar Sesión",
 
         // Common

@@ -198,6 +198,30 @@ struct HealthcareQuestions2View: View {
                 }
                 .padding(.horizontal)
 
+                // Q7: Vision Care
+                VStack(alignment: .leading, spacing: 12) {
+                    Label("Do you need vision or eye care?", systemImage: "eye")
+                        .font(.headline)
+
+                    Text("Eye exams, glasses, or vision treatment")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+
+                    HStack(spacing: 16) {
+                        YesNoButton(
+                            title: "Yes",
+                            isSelected: userProfile.needsVisionCare,
+                            action: { userProfile.needsVisionCare = true }
+                        )
+                        YesNoButton(
+                            title: "No",
+                            isSelected: !userProfile.needsVisionCare,
+                            action: { userProfile.needsVisionCare = false }
+                        )
+                    }
+                }
+                .padding(.horizontal)
+
                 // Summary of selections
                 if userProfile.insuranceStatus == .none || userProfile.insuranceStatus == .unsure {
                     HStack(spacing: 12) {
