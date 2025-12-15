@@ -384,7 +384,7 @@ struct ClinicCard: View {
             HStack {
                 Image(systemName: clinic.type.icon)
                     .font(.title2)
-                    .foregroundColor(Color(clinic.type.color))
+                    .foregroundColor(Color.fromName(clinic.type.color))
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(clinic.name)
@@ -530,7 +530,7 @@ struct MapView: View {
                             .font(.title2)
                             .foregroundColor(.white)
                             .padding(8)
-                            .background(Color(clinic.type.color))
+                            .background(Color.fromName(clinic.type.color))
                             .clipShape(Circle())
                             .shadow(radius: 3)
                     }
@@ -575,7 +575,7 @@ struct FilterSheetView: View {
                         }) {
                             HStack {
                                 Image(systemName: type.icon)
-                                    .foregroundColor(Color(type.color))
+                                    .foregroundColor(Color.fromName(type.color))
                                     .frame(width: 30)
                                 Text(type.displayName)
                                     .foregroundColor(.primary)
@@ -615,7 +615,7 @@ struct ClinicDetailView: View {
                         HStack {
                             Image(systemName: clinic.type.icon)
                                 .font(.title)
-                                .foregroundColor(Color(clinic.type.color))
+                                .foregroundColor(Color.fromName(clinic.type.color))
                             Text(clinic.type.displayName)
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)

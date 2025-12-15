@@ -249,14 +249,14 @@ struct ResourceMapView: View {
                             .font(.system(size: 14, weight: .semibold))
                             .foregroundColor(.white)
                             .padding(8)
-                            .background(Color(resource.type.color))
+                            .background(Color.fromName(resource.type.color))
                             .clipShape(Circle())
                             .shadow(radius: 3)
 
                         // Triangle pointer
                         Image(systemName: "triangle.fill")
                             .font(.system(size: 8))
-                            .foregroundColor(Color(resource.type.color))
+                            .foregroundColor(Color.fromName(resource.type.color))
                             .rotationEffect(.degrees(180))
                             .offset(y: -3)
                     }
@@ -343,7 +343,7 @@ struct ResourceCard: View {
             HStack {
                 Image(systemName: resource.type.icon)
                     .font(.title2)
-                    .foregroundColor(Color(resource.type.color))
+                    .foregroundColor(Color.fromName(resource.type.color))
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(resource.name)
@@ -462,7 +462,7 @@ struct ResourceDetailView: View {
                         HStack {
                             Image(systemName: resource.type.icon)
                                 .font(.title)
-                                .foregroundColor(Color(resource.type.color))
+                                .foregroundColor(Color.fromName(resource.type.color))
                             Text(resource.type.displayName)
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)

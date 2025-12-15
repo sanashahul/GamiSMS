@@ -28,6 +28,8 @@
 		F1000032 /* HousingQuestionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2000032; };
 		F1000033 /* Resource.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2000033; };
 		F1000034 /* ResourceFinderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2000034; };
+		F1000035 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2000035; };
+		F1000036 /* Color+StringInit.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2000036; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -53,6 +55,8 @@
 		F2000032 /* HousingQuestionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HousingQuestionsView.swift; sourceTree = "<group>"; };
 		F2000033 /* Resource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Resource.swift; sourceTree = "<group>"; };
 		F2000034 /* ResourceFinderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResourceFinderView.swift; sourceTree = "<group>"; };
+		F2000035 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
+		F2000036 /* Color+StringInit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+StringInit.swift"; sourceTree = "<group>"; };
 		F3000001 /* HealthBridge.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HealthBridge.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -94,6 +98,7 @@
 				F5000003 /* Models */,
 				F5000004 /* Views */,
 				F5000011 /* Services */,
+				F5000013 /* Extensions */,
 				F2000021 /* Assets.xcassets */,
 				F2000020 /* Info.plist */,
 			);
@@ -129,6 +134,7 @@
 				F5000008 /* Appointments */,
 				F5000009 /* Learn */,
 				F5000012 /* Resources */,
+				F5000014 /* Profile */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -193,6 +199,22 @@
 				F3000001 /* HealthBridge.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		F5000013 /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				F2000036 /* Color+StringInit.swift */,
+			);
+			path = Extensions;
+			sourceTree = "<group>";
+		};
+		F5000014 /* Profile */ = {
+			isa = PBXGroup;
+			children = (
+				F2000035 /* ProfileView.swift */,
+			);
+			path = Profile;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -280,6 +302,8 @@
 				F1000032 /* HousingQuestionsView.swift in Sources */,
 				F1000033 /* Resource.swift in Sources */,
 				F1000034 /* ResourceFinderView.swift in Sources */,
+				F1000035 /* ProfileView.swift in Sources */,
+				F1000036 /* Color+StringInit.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
